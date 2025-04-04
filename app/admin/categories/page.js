@@ -101,7 +101,7 @@ export default function AdminCategoriesPage() {
         <input
           type="text"
           name="name"
-          value={form.name}
+          value={form.name || ''}
           onChange={handleChange}
           placeholder="Category name"
           className="w-full border border-gray-400 rounded px-3 py-2 text-gray-800"
@@ -109,7 +109,7 @@ export default function AdminCategoriesPage() {
         <input
           type="text"
           name="slug"
-          value={form.slug}
+          value={form.slug || ''}
           onChange={handleChange}
           placeholder="Slug (e.g., majestic-mountains)"
           className="w-full border border-gray-400 rounded px-3 py-2 text-gray-800"
