@@ -44,14 +44,19 @@ export default function AdminShell({ children }) {
       </aside>
 
       <main className="flex-1 bg-gray-100 p-6 overflow-y-auto">
-        <SignedIn>{children}</SignedIn>
-        <SignedOut>
-          <div className="text-center mt-20">
-            <p className="text-lg mb-4">You must be signed in to access admin.</p>
-            <SignInButton />
-          </div>
-        </SignedOut>
-      </main>
+  <SignedIn>{children}</SignedIn>
+  <SignedOut>
+    <div className="text-center mt-20">
+      <p className="text-lg mb-4 text-gray-800">You must be signed in to access admin.</p>
+      <SignInButton mode="modal" redirectUrl="/admin" afterSignInUrl="/admin" asChild>
+        <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all">
+          Sign In
+        </button>
+      </SignInButton>
+    </div>
+  </SignedOut>
+</main>
+
     </div>
   )
 }

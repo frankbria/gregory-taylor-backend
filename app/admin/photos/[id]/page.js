@@ -25,6 +25,7 @@ export default function EditPhotoPage() {
     fullLength: false,
     useDefaultSizes: true,
     sizes: [],
+    location: '',
   })
 
   useEffect(() => {
@@ -76,6 +77,7 @@ export default function EditPhotoPage() {
         fullLength: photo.fullLength || false,
         useDefaultSizes: photo.useDefaultSizes ?? true,
         sizes: photo.sizes?.map(s => s._id || s) || [],
+        location: photo.location || '',
       })
     }
   }, [photo])
@@ -145,92 +147,143 @@ export default function EditPhotoPage() {
       </div>
 
       <form onSubmit={handleSave} className="space-y-4">
-        <input
-          type="text"
-          name="title"
-          value={form.title}
-          onChange={handleChange}
-          className="w-full p-2 border border-gray-400 rounded text-gray-800"
-        />
-        <textarea
-          name="description"
-          value={form.description}
-          onChange={handleChange}
-          className="w-full p-2 border border-gray-400 rounded text-gray-800"
-        />
-        <input
-          type="text"
-          name="keywords"
-          value={form.keywords}
-          onChange={handleChange}
-          className="w-full p-2 border border-gray-400 rounded text-gray-800"
-        />
-        <label className="flex items-center space-x-2 text-gray-800">
+        <div>
+          <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">Title</label>
           <input
+            id="title"
+            type="text"
+            name="title"
+            value={form.title}
+            onChange={handleChange}
+            className="w-full p-2 border border-gray-400 rounded text-gray-800"
+            placeholder="Enter photo title"
+          />
+        </div>
+        
+        <div>
+          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+          <textarea
+            id="description"
+            name="description"
+            value={form.description}
+            onChange={handleChange}
+            className="w-full p-2 border border-gray-400 rounded text-gray-800"
+            placeholder="Enter photo description"
+            rows="3"
+          />
+        </div>
+        
+        <div>
+          <label htmlFor="keywords" className="block text-sm font-medium text-gray-700 mb-1">Keywords (comma separated)</label>
+          <input
+            id="keywords"
+            type="text"
+            name="keywords"
+            value={form.keywords}
+            onChange={handleChange}
+            className="w-full p-2 border border-gray-400 rounded text-gray-800"
+            placeholder="Enter keywords separated by commas"
+          />
+        </div>
+        
+        <div>
+          <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+          <input
+            id="location"
+            type="text"
+            name="location"
+            value={form.location}
+            onChange={handleChange}
+            className="w-full p-2 border border-gray-400 rounded text-gray-800"
+            placeholder="Enter photo location"
+          />
+        </div>
+        
+        <div>
+          <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+          <select
+            id="category"
+            name="category"
+            value={form.category}
+            onChange={handleChange}
+            className="w-full p-2 border border-gray-400 rounded text-gray-800"
+          >
+            <option value="">Select a category</option>
+            {categories.map(cat => (
+              <option key={cat._id} value={cat._id}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        
+        <div className="flex items-center space-x-2 text-gray-800">
+          <input
+            id="useDefaultSizes"
             type="checkbox"
             name="useDefaultSizes"
             checked={form.useDefaultSizes}
             onChange={handleChange}
           />
-          <span>Use Default Sizes</span>
-        </label>
+          <label htmlFor="useDefaultSizes" className="text-sm font-medium">Use Default Sizes</label>
+        </div>
+        
         {!form.useDefaultSizes && (
-          <select
-            name="sizes"
-            multiple
-            value={form.sizes}
-            onChange={e =>
-              setForm(prev => ({
-                ...prev,
-                sizes: [...e.target.selectedOptions].map(o => o.value),
-              }))
-            }
-            className="w-full p-2 border border-gray-400 rounded text-gray-800"
-          >
-            {sizesList.map(size => (
-              <option key={size._id} value={size._id}>
-                {size.name} - ${size.price.toFixed(2)}
-              </option>
-            ))}
-          </select>
+          <div>
+            <label htmlFor="sizes" className="block text-sm font-medium text-gray-700 mb-1">Available Sizes</label>
+            <select
+              id="sizes"
+              name="sizes"
+              multiple
+              value={form.sizes}
+              onChange={e =>
+                setForm(prev => ({
+                  ...prev,
+                  sizes: [...e.target.selectedOptions].map(o => o.value),
+                }))
+              }
+              className="w-full p-2 border border-gray-400 rounded text-gray-800"
+            >
+              {sizesList.map(size => (
+                <option key={size._id} value={size._id}>
+                  {size.name} - ${size.price.toFixed(2)}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple sizes</p>
+          </div>
         )}
-        <label className="flex items-center space-x-2 text-gray-800">
+        
+        <div className="flex items-center space-x-2 text-gray-800">
           <input
+            id="featured"
             type="checkbox"
             name="featured"
             checked={form.featured}
             onChange={handleChange}
           />
-          <span>Featured</span>
-        </label>
-        <select
-          name="category"
-          value={form.category}
-          onChange={handleChange}
-          className="w-full p-2 border border-gray-400 rounded text-gray-800"
-        >
-          <option value="">Select a category</option>
-          {categories.map(cat => (
-            <option key={cat._id} value={cat._id}>
-              {cat.name}
-            </option>
-          ))}
-        </select>
-        <label className="flex items-center space-x-2 text-gray-800">
+          <label htmlFor="featured" className="text-sm font-medium">Featured</label>
+        </div>
+        
+        <div className="flex items-center space-x-2 text-gray-800">
           <input
+            id="fullLength"
             type="checkbox"
             name="fullLength"
             checked={form.fullLength}
             onChange={handleChange}
           />
-          <span>Full Length</span>
-        </label>
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          Save Changes
-        </button>
+          <label htmlFor="fullLength" className="text-sm font-medium">Full Length</label>
+        </div>
+        
+        <div className="pt-4">
+          <button
+            type="submit"
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            Save Changes
+          </button>
+        </div>
       </form>
 
       <button

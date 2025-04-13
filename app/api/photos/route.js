@@ -1,48 +1,67 @@
 // app/api/photos/route.js
-import { connectToDB } from '@/lib/db'
+import { NextResponse } from 'next/server'
+import connectToDB from '@/lib/db'
 import Photo from '@/models/Photo'
 import Category from '@/models/Category'
+import { generateSlug } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic' // allows POST in serverless
 
-export async function POST(req) {
-  try {
-    await connectToDB()
-    const body = await req.json()
-
-    // Parse keywords if it's a comma-separated string
-    if (typeof body.keywords === 'string') {
-      body.keywords = body.keywords.split(',').map(k => k.trim())
-    }
-
-    // Default empty sizes array if not using overrides
-    if (body.useDefaultSizes) {
-      body.sizes = []
-    }
-
-    const photo = new Photo(body)
-    const saved = await photo.save()
-
-    return Response.json({ success: true, photo: saved })
-  } catch (err) {
-    console.error('DB Save Error:', err)
-    return new Response('Error saving photo', { status: 500 })
-  }
-}
-
+// GET all photos
 export async function GET() {
   try {
     await connectToDB()
+    const photos = await Photo.find().populate('category').populate('sizes')
+    return NextResponse.json(photos)
+  } catch (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+}
 
-    //console.log('PHOTO SCHEMA FIELDS:', Object.keys(Photo.schema.paths))
-    // Populate category name in the response
-    const photos = await Photo.find()
-      .sort({ createdAt: -1 })
-      .populate('category', 'name') // only pull the category name
+// POST a new photo
+export async function POST(request) {
+  try {
+    await connectToDB()
+    const data = await request.json()
+    
+    // Generate a slug from the title
+    const slug = generateSlug(data.title)
+    
+    // Create the photo with the generated slug
+    const photo = await Photo.create({
+      ...data,
+      slug
+    })
+    
+    return NextResponse.json(photo, { status: 201 })
+  } catch (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+}
 
-    return Response.json(photos)
-  } catch (err) {
-    console.error('Fetch error:', err)
-    return new Response('Error fetching photos', { status: 500 })
+// PUT update a photo
+export async function PUT(request) {
+  try {
+    await connectToDB()
+    const data = await request.json()
+    
+    // If title is being updated, generate a new slug
+    if (data.title) {
+      data.slug = generateSlug(data.title)
+    }
+    
+    const photo = await Photo.findByIdAndUpdate(
+      data._id,
+      data,
+      { new: true, runValidators: true }
+    ).populate('category').populate('sizes')
+    
+    if (!photo) {
+      return NextResponse.json({ error: 'Photo not found' }, { status: 404 })
+    }
+    
+    return NextResponse.json(photo)
+  } catch (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
