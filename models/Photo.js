@@ -22,8 +22,9 @@ const PhotoSchema = new mongoose.Schema({
   },
   slug: {
     type: String,
+    required: true,
     unique: true,
-    sparse: true
+    trim: true
   },
 
   category: {
@@ -56,6 +57,12 @@ const PhotoSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  
+  format: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Format',
+    default: null,
+  },
 },
   
   { timestamps: true })
@@ -66,6 +73,5 @@ PhotoSchema.index({ slug: 1, category: 1 })
 // Create indexes
 PhotoSchema.index({ title: 'text', description: 'text' })
 PhotoSchema.index({ category: 1 })
-PhotoSchema.index({ slug: 1 })
 
 export default mongoose.models.Photo || mongoose.model('Photo', PhotoSchema)

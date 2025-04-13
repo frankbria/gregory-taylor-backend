@@ -1,20 +1,37 @@
 // app/api/photos/route.js
 import { NextResponse } from 'next/server'
-import connectToDB from '@/lib/db'
+import { connectToDB } from '@/lib/db'
 import Photo from '@/models/Photo'
 import Category from '@/models/Category'
-import { generateSlug } from '@/lib/utils'
+import { generateSlug, ensureUniqueSlug } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic' // allows POST in serverless
+
+// Helper to check if a slug exists
+async function checkPhotoSlugExists(slug, excludeId = null) {
+  const query = { slug }
+  if (excludeId) {
+    query._id = { $ne: excludeId }
+  }
+  const existing = await Photo.findOne(query)
+  return !!existing
+}
 
 // GET all photos
 export async function GET() {
   try {
     await connectToDB()
-    const photos = await Photo.find().populate('category').populate('sizes')
+    const photos = await Photo.find()
+      .populate('category')
+      .populate('sizes')
+      .sort({ createdAt: -1 }) // Sort by newest first
     return NextResponse.json(photos)
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    console.error('Error fetching photos:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch photos', details: error.message },
+      { status: 500 }
+    )
   }
 }
 
@@ -24,18 +41,42 @@ export async function POST(request) {
     await connectToDB()
     const data = await request.json()
     
-    // Generate a slug from the title
-    const slug = generateSlug(data.title)
+    console.log('Received photo data:', data)
+    
+    if (!data.title || !data.title.trim()) {
+      return NextResponse.json(
+        { error: 'Title is required' },
+        { status: 400 }
+      )
+    }
+    
+    // Generate a base slug from the title
+    const baseSlug = generateSlug(data.title)
+    console.log('Generated base slug:', baseSlug)
+    
+    // Ensure the slug is unique
+    const slug = await ensureUniqueSlug(baseSlug, null, checkPhotoSlugExists)
+    console.log('Final unique slug:', slug)
     
     // Create the photo with the generated slug
-    const photo = await Photo.create({
+    const photoData = {
       ...data,
       slug
-    })
+    }
+    
+    console.log('Creating photo with data:', photoData)
+    
+    const photo = await Photo.create(photoData)
+    
+    console.log('Created photo with slug:', photo.slug)
     
     return NextResponse.json(photo, { status: 201 })
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    console.error('Error creating photo:', error)
+    return NextResponse.json(
+      { error: 'Failed to create photo', details: error.message },
+      { status: 500 }
+    )
   }
 }
 
@@ -47,7 +88,8 @@ export async function PUT(request) {
     
     // If title is being updated, generate a new slug
     if (data.title) {
-      data.slug = generateSlug(data.title)
+      const baseSlug = generateSlug(data.title)
+      data.slug = await ensureUniqueSlug(baseSlug, data._id, checkPhotoSlugExists)
     }
     
     const photo = await Photo.findByIdAndUpdate(
@@ -62,6 +104,10 @@ export async function PUT(request) {
     
     return NextResponse.json(photo)
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    console.error('Error updating photo:', error)
+    return NextResponse.json(
+      { error: 'Failed to update photo', details: error.message },
+      { status: 500 }
+    )
   }
 }

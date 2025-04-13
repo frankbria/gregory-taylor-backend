@@ -5,6 +5,7 @@ import Photo from '@/models/Photo'
 import Category from '@/models/Category'
 import { v2 as cloudinary } from 'cloudinary'
 import mongoose from 'mongoose'
+import { generateSlug, ensureUniqueSlug } from '@/lib/utils'
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -13,6 +14,7 @@ cloudinary.config({
 })
 
 // Helper to slugify titles
+/*
 function slugify(str) {
   return str
     .toLowerCase()
@@ -22,110 +24,107 @@ function slugify(str) {
     .replace(/--+/g, '-')
     .replace(/^-+|-+$/g, '')
 }
+    */
 
-// Helper to ensure unique slug
-async function ensureUniqueSlug(baseSlug, photoId = null) {
-  let slug = baseSlug
-  let counter = 1
-  
-  // Keep checking until we find a unique slug
-  while (true) {
-    // Check if a photo with this slug already exists (excluding the current photo)
-    const query = { slug: slug }
-    if (photoId) {
-      query._id = { $ne: photoId }
-    }
-    
-    const existingPhoto = await Photo.findOne(query)
-    
-    // If no photo exists with this slug, we've found a unique one
-    if (!existingPhoto) {
-      return slug
-    }
-    
-    // Otherwise, append a counter and try again
-    slug = `${baseSlug}-${counter}`
-    counter++
+// Helper to check if a slug exists
+async function checkPhotoSlugExists(slug, excludeId = null) {
+  const query = { slug }
+  if (excludeId) {
+    query._id = { $ne: excludeId }
   }
+  const existing = await Photo.findOne(query)
+  return !!existing
 }
 
-export async function GET(req, ctx) {
-  const { params } = ctx
-  await connectToDB()
+export const dynamic = 'force-dynamic'
 
-  const photo = await Photo.findById(params.id).populate('category', 'name')
-  return Response.json(photo)
-}
-
-export async function PUT(req, context) {
-  await connectToDB()
-  const params = await context.params
-  const id = params.id
-  const body = await req.json()
-
-  // Normalize keywords
-  if (typeof body.keywords === 'string') {
-    body.keywords = body.keywords.split(',').map(k => k.trim())
-  }
-
-  // Enforce size override structure
-  if (body.useDefaultSizes) {
-    body.sizes = []
-  }
-
-  // Generate slug if missing or title changed
-  const existingPhoto = await Photo.findById(id)
-  if (!existingPhoto) {
-    return new Response('Photo not found', { status: 404 })
-  }
-  
-  const titleChanged = body.title && body.title !== existingPhoto.title
-
-  if (!body.slug || titleChanged) {
-    const baseSlug = slugify(body.title || existingPhoto.title)
-    // Ensure the slug is unique
-    body.slug = await ensureUniqueSlug(baseSlug, id)
-  }
-
+export async function GET(request, { params }) {
   try {
-    // Create a new document with all the updated fields
-    const updatedPhoto = {
-      ...existingPhoto.toObject(),
-      ...body,
-      slug: body.slug, // Explicitly set the slug
-      location: body.location // Explicitly set the location
+    await connectToDB()
+    const photo = await Photo.findById(params.id).populate('category sizes')
+    if (!photo) return new Response('Photo not found', { status: 404 })
+    return Response.json(photo)
+  } catch (error) {
+    console.error('Error fetching photo:', error)
+    return new Response('Error fetching photo', { status: 500 })
+  }
+}
+
+export async function PUT(request) {
+  try {
+    await connectToDB()
+    
+    // Extract ID from the URL instead of using params
+    const url = new URL(request.url)
+    const pathParts = url.pathname.split('/')
+    const id = pathParts[pathParts.length - 1]
+    
+    const existingPhoto = await Photo.findById(id)
+    if (!existingPhoto) return new Response('Photo not found', { status: 404 })
+
+    const body = await request.json()
+    const baseSlug = generateSlug(body.title || existingPhoto.title)
+
+    // Normalize keywords
+    if (typeof body.keywords === 'string') {
+      body.keywords = body.keywords.split(',').map(k => k.trim())
     }
-    
-    // Use findOneAndReplace to completely replace the document
-    const result = await Photo.findOneAndReplace(
-      { _id: id },
-      updatedPhoto,
-      { new: true, runValidators: true }
-    )
-    
-    // If the replace didn't work, try a direct MongoDB update
-    if (!result || !result.slug) {
-      // Get the MongoDB connection
-      const db = mongoose.connection.db
+
+    // Enforce size override structure
+    if (body.useDefaultSizes) {
+      body.sizes = []
+    }
+
+    // Generate slug if missing or title changed
+    const titleChanged = body.title && body.title !== existingPhoto.title
+
+    if (!body.slug || titleChanged) {
+      body.slug = await ensureUniqueSlug(baseSlug, id, checkPhotoSlugExists)
+    }
+
+    try {
+      // Create a new document with all the updated fields
+      const updatedPhoto = {
+        ...existingPhoto.toObject(),
+        ...body,
+        slug: body.slug, // Explicitly set the slug
+        location: body.location // Explicitly set the location
+      }
       
-      // Perform a direct update on the collection
-      await db.collection('photos').updateOne(
-        { _id: new mongoose.Types.ObjectId(id) },
-        { $set: { 
-          slug: body.slug,
-          location: body.location // Explicitly set the location in the direct update
-        }}
+      // Use findOneAndReplace to completely replace the document
+      const result = await Photo.findOneAndReplace(
+        { _id: id },
+        updatedPhoto,
+        { new: true, runValidators: true }
       )
       
-      // Fetch the updated document
-      const finalDoc = await Photo.findById(id)
-      return Response.json(finalDoc)
+      // If the replace didn't work, try a direct MongoDB update
+      if (!result || !result.slug) {
+        // Get the MongoDB connection
+        const db = mongoose.connection.db
+        
+        // Perform a direct update on the collection
+        await db.collection('photos').updateOne(
+          { _id: new mongoose.Types.ObjectId(id) },
+          { $set: { 
+            slug: body.slug,
+            location: body.location // Explicitly set the location in the direct update
+          }}
+        )
+        
+        // Fetch the updated document
+        const finalDoc = await Photo.findById(id)
+        return Response.json(finalDoc)
+      }
+      
+      return Response.json(result)
+    } catch (error) {
+      console.error('Error updating photo:', error)
+      return new Response('Error updating photo: ' + error.message, { status: 500 })
     }
-    
-    return Response.json(result)
   } catch (error) {
     console.error('Error updating photo:', error)
-    return new Response('Error updating photo: ' + error.message, { status: 500 })
+    return new Response('Error updating photo', { status: 500 })
   }
 }
 

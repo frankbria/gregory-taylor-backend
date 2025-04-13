@@ -8,6 +8,8 @@ import { SignedIn, SignedOut, SignInButton } from '@clerk/nextjs'
 const navItems = [
   { name: 'Manage Photos', href: '/admin/photos' },
   { name: 'Manage Sizes', href: '/admin/sizes' },
+  { name: 'Manage Frames', href: '/admin/frames' },
+  { name: 'Manage Formats', href: '/admin/formats' },
   { name: 'Manage Prices', href: '/admin/prices' },
   { name: 'Manage Categories', href: '/admin/categories' },
 ]

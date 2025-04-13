@@ -3,14 +3,7 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { toast } from 'react-hot-toast'
-
-const slugify = str =>
-  str
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, '')
-    .trim()
-    .replace(/[\s_-]+/g, '-')
-    .replace(/^-+|-+$/g, '')
+import { generateSlug } from '@/lib/utils'
 
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState([])
@@ -36,7 +29,7 @@ export default function AdminCategoriesPage() {
     setForm(prev => ({
       ...prev,
       [name]: value,
-      ...(name === 'name' && !editing && { slug: slugify(value) }),
+      ...(name === 'name' && !editing && { slug: generateSlug(value) }),
     }))
   }
 
@@ -49,106 +42,146 @@ export default function AdminCategoriesPage() {
       if (editing) {
         await toast.promise(
           axios.put(`/api/categories/${editing._id}`, form),
-          {
-            loading: 'Updating...',
-            success: 'Category updated',
-            error: 'Failed to update',
-          }
+          { loading: 'Saving...', success: 'Category updated!', error: 'Update failed.' }
         )
       } else {
         await toast.promise(
           axios.post('/api/categories', form),
-          {
-            loading: 'Creating...',
-            success: 'Category created',
-            error: 'Failed to create',
-          }
+          { loading: 'Creating...', success: 'Category added!', error: 'Create failed.' }
         )
       }
+
+      fetchCategories()
       setForm({ name: '', slug: '' })
       setEditing(null)
-      fetchCategories()
     } catch (err) {
       console.error(err)
+      toast.error('Unexpected error')
     }
   }
 
-  const handleEdit = cat => {
-    setEditing(cat)
-    setForm({ name: cat.name, slug: cat.slug })
+  const handleEdit = category => {
+    setForm({ name: category.name, slug: category.slug })
+    setEditing(category)
   }
 
   const handleDelete = async id => {
+    if (!confirm('Are you sure you want to delete this category?')) return
+
     try {
       await toast.promise(
         axios.delete(`/api/categories/${id}`),
-        {
-          loading: 'Deleting...',
-          success: 'Category deleted',
-          error: 'Failed to delete',
-        }
+        { loading: 'Deleting...', success: 'Category deleted!', error: 'Delete failed.' }
       )
-      fetchCategories()
+      setCategories(prev => prev.filter(cat => cat._id !== id))
     } catch (err) {
       console.error(err)
+      toast.error('Unexpected error during delete')
     }
   }
 
   return (
-    <div className="max-w-xl mx-auto space-y-6">
+    <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-800">Manage Categories</h1>
-      <form onSubmit={handleSubmit} className="space-y-2">
-        <input
-          type="text"
-          name="name"
-          value={form.name || ''}
-          onChange={handleChange}
-          placeholder="Category name"
-          className="w-full border border-gray-400 rounded px-3 py-2 text-gray-800"
-        />
-        <input
-          type="text"
-          name="slug"
-          value={form.slug || ''}
-          onChange={handleChange}
-          placeholder="Slug (e.g., majestic-mountains)"
-          className="w-full border border-gray-400 rounded px-3 py-2 text-gray-800"
-        />
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          {editing ? 'Update' : 'Add'}
-        </button>
-      </form>
 
-      <ul className="space-y-2">
-        {categories.map(cat => (
-          <li
-            key={cat._id}
-            className="flex justify-between items-center border p-2 rounded bg-white shadow-sm"
-          >
+      <div className="bg-white p-6 rounded-lg shadow">
+        <h2 className="text-xl font-semibold mb-4 text-gray-800">
+          {editing ? 'Edit Category' : 'Add New Category'}
+        </h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <div className="text-gray-800 font-medium">{cat.name}</div>
-              <div className="text-gray-500 text-sm">{cat.slug}</div>
+              <label className="block text-sm font-medium text-gray-800 mb-1">Name</label>
+              <input
+                type="text"
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                className="w-full p-2 border rounded text-gray-800"
+                required
+              />
             </div>
-            <div className="space-x-2">
-              <button
-                onClick={() => handleEdit(cat)}
-                className="px-3 py-1 text-sm bg-yellow-500 text-white rounded hover:bg-yellow-600"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => handleDelete(cat._id)}
-                className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
-              >
-                Delete
-              </button>
+            <div>
+              <label className="block text-sm font-medium text-gray-800 mb-1">Slug</label>
+              <input
+                type="text"
+                name="slug"
+                value={form.slug}
+                onChange={handleChange}
+                className="w-full p-2 border rounded text-gray-800"
+                required
+              />
             </div>
-          </li>
-        ))}
-      </ul>
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="submit"
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
+              {editing ? 'Update Category' : 'Add Category'}
+            </button>
+            {editing && (
+              <button
+                type="button"
+                onClick={() => {
+                  setEditing(null)
+                  setForm({ name: '', slug: '' })
+                }}
+                className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400"
+              >
+                Cancel
+              </button>
+            )}
+          </div>
+        </form>
+      </div>
+
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <h2 className="text-xl font-semibold p-6 border-b text-gray-800">Categories</h2>
+        {categories.length === 0 ? (
+          <div className="p-6 text-center text-gray-800">No categories found</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-800 uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-800 uppercase tracking-wider">
+                    Slug
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-800 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {categories.map(category => (
+                  <tr key={category._id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-800">{category.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-800">{category.slug}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <button
+                        onClick={() => handleEdit(category)}
+                        className="text-indigo-600 hover:text-indigo-900 mr-4"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(category._id)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

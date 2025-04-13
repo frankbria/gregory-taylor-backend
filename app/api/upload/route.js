@@ -32,7 +32,7 @@ export async function POST(req) {
 
     return Response.json({ 
         url: result.secure_url,
-        public_id: result.public_id,})
+        publicID: result.public_id,})
   } catch (err) {
     console.error('Upload error:', err)
     return new Response('Upload failed', { status: 500 })

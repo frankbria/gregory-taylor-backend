@@ -20,25 +20,32 @@ export default function AddPhotoPage() {
   fullLength: false,
   useDefaultSizes: true,
   sizes: [], // Will contain ObjectId strings
+  location: '', // Added location field
 })
 
   const [imageFile, setImageFile] = useState(null)
   const router = useRouter()
 
   const [categories, setCategories] = useState([])
+  const [sizes, setSizes] = useState([]) // Added sizes state
 
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchData = async () => {
       try {
-        const res = await axios.get('/api/categories')
-        setCategories(res.data)
+        // Fetch categories
+        const categoriesRes = await axios.get('/api/categories')
+        setCategories(categoriesRes.data)
+
+        // Fetch sizes
+        const sizesRes = await axios.get('/api/sizes')
+        setSizes(sizesRes.data)
       } catch (err) {
-        console.error('Error loading categories:', err)
-        toast.error('Failed to fetch categories')
+        console.error('Error loading data:', err)
+        toast.error('Failed to fetch data')
       }
     }
 
-    fetchCategories()
+    fetchData()
   }, [])
 
   useEffect(() => {
@@ -70,6 +77,11 @@ export default function AddPhotoPage() {
         return
     }
 
+    if (!form.title.trim()) {
+        toast.error('Please enter a title.')
+        return
+    }
+
     try {
         const formData = new FormData()
         formData.append('file', imageFile)
@@ -83,15 +95,18 @@ export default function AddPhotoPage() {
         }
         )
 
-        const { url, public_id } = uploadRes.data
+        const { url, publicID } = uploadRes.data
 
         const photoData = {
             ...form,
+            title: form.title.trim(),
             imageUrl: url,
-            publicId: public_id,
+            publicID: publicID,
             keywords: form.keywords.split(',').map(k => k.trim()),
             sizes: form.useDefaultSizes ? [] : form.sizes || [],
         }
+
+        console.log('Sending photo data:', photoData)
 
         await toast.promise(
         axios.post('/api/photos', photoData),
@@ -120,12 +135,21 @@ export default function AddPhotoPage() {
           className="w-full p-2 border border-gray-400 rounded text-gray-800 placeholder-gray-500"
           value={form.title}
           onChange={handleChange}
+          required
         />
         <textarea
           name="description"
           placeholder="Description"
           className="w-full p-2 border border-gray-400 rounded text-gray-800 placeholder-gray-500"
           value={form.description}
+          onChange={handleChange}
+        />
+        <input
+          type="text"
+          name="location"
+          placeholder="Location"
+          className="w-full p-2 border border-gray-400 rounded text-gray-800 placeholder-gray-500"
+          value={form.location}
           onChange={handleChange}
         />
         <input
@@ -160,7 +184,54 @@ export default function AddPhotoPage() {
             <span>Use default sizes</span>
           </label>
         </div>
+        
+        {!form.useDefaultSizes && (
           <div>
+            <label className="block mb-2 text-gray-800">Sizes</label>
+            <select
+              multiple
+              name="sizes"
+              value={form.sizes}
+              onChange={(e) => {
+                const values = Array.from(e.target.selectedOptions, option => option.value)
+                setForm(prev => ({ ...prev, sizes: values }))
+              }}
+              className="w-full p-2 border border-gray-400 rounded text-gray-800"
+            >
+              {sizes.map(size => (
+                <option key={size._id} value={size._id}>
+                  {size.name} - ${size.price}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+        
+        <div>
+          <label className="flex items-center space-x-2 border-gray-400 rounded text-gray-800 placeholder-gray-500">
+            <input
+              type="checkbox"
+              name="featured"
+              checked={form.featured}
+              onChange={handleChange}
+            />
+            <span>Featured</span>
+          </label>
+        </div>
+        
+        <div>
+          <label className="flex items-center space-x-2 border-gray-400 rounded text-gray-800 placeholder-gray-500">
+            <input
+              type="checkbox"
+              name="fullLength"
+              checked={form.fullLength}
+              onChange={handleChange}
+            />
+            <span>Full Length</span>
+          </label>
+        </div>
+        
+        <div>
             <label
                 htmlFor="imageUpload"
                 className="cursor-pointer inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
@@ -203,12 +274,21 @@ export default function AddPhotoPage() {
             />
             </div>
         </div>
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          Save Photo
-        </button>
+        <div className="flex space-x-4">
+          <button
+            type="submit"
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            Save Photo
+          </button>
+          <button
+            type="button"
+            onClick={() => router.push('/admin/photos')}
+            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+          >
+            Cancel
+          </button>
+        </div>
       </form>
       {status.message && (
         <div className={`mt-4 p-2 rounded ${status.type === 'error' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
