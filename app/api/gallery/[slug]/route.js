@@ -10,8 +10,12 @@ export async function GET(req, context) {
   try {
     await connectToDB()
 
-    const { params } = context
-    const category = await Category.findOne({ slug: params.slug })
+    // Extract slug from the URL instead of using params
+    const url = new URL(req.url)
+    const pathParts = url.pathname.split('/')
+    const slug = pathParts[pathParts.length - 1]
+    
+    const category = await Category.findOne({ slug })
     if (!category) {
       return new Response('Category not found', { status: 404 })
     }
