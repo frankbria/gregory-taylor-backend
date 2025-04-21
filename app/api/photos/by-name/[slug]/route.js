@@ -1,5 +1,8 @@
 import { connectToDB } from '@/lib/db'
 import Photo from '@/models/Photo'
+import Category from '@/models/Category'
+import Size from '@/models/Size'
+// import Frame from '@/models/Frame' // Uncomment if you use .populate('frames')
 
 export const dynamic = 'force-dynamic'
 
@@ -28,4 +31,4 @@ export async function GET(req) {
     console.error('Error fetching photo:', err)
     return new Response('Error fetching photo', { status: 500 })
   }
-} 
+}
