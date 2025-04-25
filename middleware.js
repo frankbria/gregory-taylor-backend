@@ -6,11 +6,12 @@ export default clerkMiddleware((auth, req) => {
     const method = req.method
 
     const allowed = process.env.CORS_ALLOWED_ORIGINS || ''
-    const allowedOrigins = allowed.split(',').map(o => o.trim())
+    const allowedOrigins = allowed.split(',').map(o => o.trim()).filter(Boolean)
+    const isAllowedOrigin = origin && allowedOrigins.includes(origin)
 
     // Build CORS response
     const corsHeaders = {
-        "Access-Control-Allow-Origin": origin && allowedOrigins.includes(origin) ? origin : '',
+        ...(isAllowedOrigin && { "Access-Control-Allow-Origin": origin }),
         "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type, Authorization",
         "Access-Control-Allow-Credentials": "true"
@@ -24,10 +25,10 @@ export default clerkMiddleware((auth, req) => {
         })
     }
 
-    // ✅ For non-OPTIONS requests, proceed and set CORS headers
+    // ✅ For non-OPTIONS requests, proceed and set CORS headers if allowed
     const res = NextResponse.next()
     Object.entries(corsHeaders).forEach(([key, value]) => {
-        if (value) res.headers.set(key, value)
+        res.headers.set(key, value)
     })
 
     return res
