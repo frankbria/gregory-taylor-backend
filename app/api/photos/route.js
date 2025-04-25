@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { connectToDB } from '@/lib/db'
 import Photo from '@/models/Photo'
 import Category from '@/models/Category'
+import Size from '@/models/Size' // Add this import
 import { generateSlug, ensureUniqueSlug } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic' // allows POST in serverless
