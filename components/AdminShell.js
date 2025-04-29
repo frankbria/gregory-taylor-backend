@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { SignedIn, SignedOut, SignInButton } from '@clerk/nextjs'
+import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 
 const navItems = [
   { name: 'Manage Photos', href: '/admin/photos' },
@@ -22,7 +22,7 @@ export default function AdminShell({ children }) {
       <aside className="w-64 bg-gray-900 text-white p-4 space-y-4 overflow-y-auto">
         <div className="flex flex-col items-center space-y-2 mb-6">
             <Image
-                src="/#" // TODO: Replace with your logo URL
+                src="/android-chrome-192x192-rev.png"
                 alt="Logo"
                 width={100}
                 height={100}
@@ -46,19 +46,16 @@ export default function AdminShell({ children }) {
       </aside>
 
       <main className="flex-1 bg-gray-100 p-6 overflow-y-auto">
-  <SignedIn>{children}</SignedIn>
-  <SignedOut>
-    <div className="text-center mt-20">
-      <p className="text-lg mb-4 text-gray-800">You must be signed in to access admin.</p>
-      <SignInButton mode="modal" redirectUrl="/admin" afterSignInUrl="/admin" asChild>
-        <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all">
-          Sign In
-        </button>
-      </SignInButton>
-    </div>
-  </SignedOut>
-</main>
-
+        <SignedIn>{children}</SignedIn>
+        <SignedOut>
+          <div className="text-center mt-20">
+            <p className="text-lg mb-4 text-gray-800">You must be signed in to access admin.</p>
+            <Link href="/sign-in?redirect_url=/admin" className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">
+              Sign In
+            </Link>
+          </div>
+        </SignedOut>
+      </main>
     </div>
   )
 }

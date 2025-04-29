@@ -136,7 +136,7 @@ export default function AdminPage() {
       </SignedIn>
 
       <SignedOut>
-        <RedirectToSignIn />
+        <RedirectToSignIn afterSignInUrl="/admin/photos" />
       </SignedOut>
     </>
   )
