@@ -8,8 +8,6 @@ import axios from 'axios'
 
 import ImageUpload from '@/components/ImageUpload'
 
-console.log("Clerk secret is:", !!process.env.CLERK_SECRET_KEY);
-
 
 export default function AdminPage() {
     redirect('/admin/photos')

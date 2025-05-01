@@ -20,6 +20,9 @@ async function checkPhotoSlugExists(slug, excludeId = null) {
 
 // GET all photos
 export async function GET() {
+
+  console.log("Clerk secret is:", !!process.env.CLERK_SECRET_KEY);
+
   try {
     await connectToDB()
     const photos = await Photo.find()
