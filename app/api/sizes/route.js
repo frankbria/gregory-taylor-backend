@@ -1,3 +1,6 @@
+// backend/app/api/sizes/route.js
+export const runtime = "nodejs";
+
 import { connectToDB } from '@/lib/db'
 import Size from '@/models/Size'
 

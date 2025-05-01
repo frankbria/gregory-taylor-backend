@@ -1,5 +1,5 @@
 // backend/app/api/gallery/[slug]/route.js
-
+export const runtime = "nodejs";
 import { connectToDB } from '@/lib/db'
 import Photo from '@/models/Photo'
 import Category from '@/models/Category'

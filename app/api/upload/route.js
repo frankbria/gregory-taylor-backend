@@ -1,4 +1,6 @@
-// app/api/upload/route.js
+// backend/app/api/upload/route.js
+export const runtime = "nodejs";
+
 import { v2 as cloudinary } from 'cloudinary'
 
 cloudinary.config({

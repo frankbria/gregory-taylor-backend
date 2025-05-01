@@ -1,3 +1,6 @@
+// backend/app/api/prices/[id]/route.js
+export const runtime = "nodejs";
+
 import { connectToDB } from '@/lib/db'
 import Price from '@/models/Price'
 

@@ -1,4 +1,5 @@
 // /api/photos/[id]/route.js
+export const runtime = "nodejs";
 
 import { connectToDB } from '@/lib/db'
 import Photo from '@/models/Photo'

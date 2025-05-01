@@ -1,3 +1,6 @@
+// backend/app/api/frames/[id]/route.js
+export const runtime = "nodejs";
+
 import { connectToDB } from '@/lib/db'
 import Frame from '@/models/Frame'
 

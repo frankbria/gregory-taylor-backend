@@ -1,4 +1,7 @@
 // app/api/photos/route.js
+
+export const runtime = "nodejs";
+
 import { NextResponse } from 'next/server'
 import { connectToDB } from '@/lib/db'
 import Photo from '@/models/Photo'
