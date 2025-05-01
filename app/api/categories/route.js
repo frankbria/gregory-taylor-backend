@@ -1,11 +1,12 @@
 import { connectToDB } from '@/lib/db'
 import Category from '@/models/Category'
 import Photo from '@/models/Photo'
+import { corsHeaders } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic' // allows POST in serverless
 
 // 🟢 GET: Return categories + featured image
-export async function GET() {
+export async function GET(req) {
   try {
     await connectToDB()
 
@@ -27,13 +28,13 @@ export async function GET() {
 
     return new Response(JSON.stringify(enriched), {
       status: 200,
-      headers: corsHeaders(),
+      headers: corsHeaders(req),
     })
   } catch (err) {
     console.error('Error fetching categories with featured photos:', err)
     return new Response('Error fetching categories', {
       status: 500,
-      headers: corsHeaders(),
+      headers: corsHeaders(req),
     })
   }
 }
@@ -47,26 +48,14 @@ export async function POST(req) {
 
   return new Response(JSON.stringify(saved), {
     status: 201,
-    headers: corsHeaders(),
+    headers: corsHeaders(req),
   })
 }
 
 // 🟠 OPTIONS: Handle CORS preflight requests
-export async function OPTIONS() {
+export async function OPTIONS(req) {
   return new Response(null, {
     status: 204,
-    headers: corsHeaders(),
+    headers: corsHeaders(req),
   })
-}
-
-// 🧩 Helper: CORS headers
-function corsHeaders() {
-  const allowedOrigin = process.env.CORS_ALLOWED_ORIGINS?.split(',')[0] || '*'
-
-  return {
-    'Access-Control-Allow-Origin': allowedOrigin,
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Credentials': 'true',
-  }
 }

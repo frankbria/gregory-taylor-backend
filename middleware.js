@@ -8,6 +8,8 @@ export default clerkMiddleware((auth, req) => {
     const allowed = process.env.CORS_ALLOWED_ORIGINS || ''
     const allowedOrigins = allowed.split(',').map(o => o.trim()).filter(Boolean)
     const isAllowedOrigin = origin && allowedOrigins.includes(origin)
+    console.log("CORS allowed origins:", allowedOrigins)
+    console.log("CORS request origin:", origin)
 
     // Build CORS response
     const corsHeaders = {
