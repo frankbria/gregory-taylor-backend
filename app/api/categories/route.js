@@ -1,3 +1,7 @@
+// backend/app/api/categories/route.js
+export const runtime = "nodejs";
+
+
 import { connectToDB } from '@/lib/db'
 import Category from '@/models/Category'
 import Photo from '@/models/Photo'
