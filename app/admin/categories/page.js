@@ -76,7 +76,7 @@ export default function AdminCategoriesPage() {
       setCategories(prev => prev.filter(cat => cat._id !== id))
     } catch (err) {
       console.error(err)
-      toast.error('Unexpected error during delete')
+      toast.error('Unexpected error during delete operation')
     }
   }
 
