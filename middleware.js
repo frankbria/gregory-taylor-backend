@@ -1,3 +1,10 @@
+// backend/middleware.js
+// Changing middlware for AWS hosting
+// Moving the middleware out of the Edge and into a Node.js function
+// This is because AWS Lambda does not support Edge Middleware
+
+export const runtime = 'nodejs'
+
 import { clerkMiddleware } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 
@@ -8,8 +15,8 @@ export default clerkMiddleware((auth, req) => {
     const allowed = process.env.CORS_ALLOWED_ORIGINS || ''
     const allowedOrigins = allowed.split(',').map(o => o.trim()).filter(Boolean)
     const isAllowedOrigin = origin && allowedOrigins.includes(origin)
-    console.log("CORS allowed origins:", allowedOrigins)
-    console.log("CORS request origin:", origin)
+    // console.log("CORS allowed origins:", allowedOrigins)
+    // console.log("CORS request origin:", origin)
 
     // Build CORS response
     const corsHeaders = {
