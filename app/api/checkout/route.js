@@ -30,7 +30,7 @@ export async function POST(request) {
       payment_method_types: ['card'],
       line_items,
       mode: 'payment',
-      success_url: `${origin}/cart/success`,
+      success_url: `${origin}/cart/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/cart/cancel`,
     })
 

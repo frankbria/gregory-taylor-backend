@@ -12,6 +12,7 @@ const navItems = [
   { name: 'Manage Formats', href: '/admin/formats' },
   { name: 'Manage Prices', href: '/admin/prices' },
   { name: 'Manage Categories', href: '/admin/categories' },
+  { name: 'Manage Orders', href: '/admin/orders' },
 ]
 
 export default function AdminShell({ children }) {
