@@ -4,6 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
+import { useState, useEffect } from 'react'
 
 const navItems = [
   { name: 'Manage Photos', href: '/admin/photos' },
@@ -17,6 +18,21 @@ const navItems = [
 
 export default function AdminShell({ children }) {
   const pathname = usePathname()
+  const [pendingCount, setPendingCount] = useState(0)
+
+  useEffect(() => {
+    async function fetchPendingCount() {
+      try {
+        const res = await fetch('/api/orders')
+        const data = await res.json()
+        const count = data.filter(o => o.status === 'paid').length
+        setPendingCount(count)
+      } catch (err) {
+        console.error('Error fetching pending orders count:', err)
+      }
+    }
+    fetchPendingCount()
+  }, [])
 
   return (
     <div className="flex h-screen">
@@ -41,6 +57,11 @@ export default function AdminShell({ children }) {
               }`}
             >
               {name}
+              {name === 'Manage Orders' && pendingCount > 0 && (
+                <span className="ml-2 inline-block bg-green-800 text-white text-xs font-bold rounded-full px-2">
+                  {pendingCount}
+                </span>
+              )}
             </Link>
           ))}
         </nav>
