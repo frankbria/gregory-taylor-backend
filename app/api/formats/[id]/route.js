@@ -4,6 +4,7 @@ export const runtime = "nodejs";
 import { connectToDB } from '@/lib/db'
 import Format from '@/models/Format'
 import { NextResponse } from 'next/server'
+import { adminAuth } from '@/lib/adminAuth'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,12 +30,12 @@ export async function GET(request, { params }) {
   }
 }
 
-export async function PUT(request, { params }) {
+export const PUT = adminAuth(async (req) => {
   try {
     await connectToDB()
-    const body = await request.json()
-    
-    const format = await Format.findById(params.id)
+    const body = await req.json()
+
+    const format = await Format.findById(req.id)
     if (!format) {
       return NextResponse.json(
         { error: 'Format not found' },
@@ -43,7 +44,7 @@ export async function PUT(request, { params }) {
     }
 
     const updatedFormat = await Format.findByIdAndUpdate(
-      params.id,
+      req.id,
       { $set: body },
       { new: true }
     )
@@ -56,13 +57,13 @@ export async function PUT(request, { params }) {
       { status: 500 }
     )
   }
-}
+})
 
-export async function DELETE(request, { params }) {
+export const DELETE = adminAuth(async (req) => {
   try {
     await connectToDB()
-    const format = await Format.findById(params.id)
-    
+    const format = await Format.findById(req.id)
+
     if (!format) {
       return NextResponse.json(
         { error: 'Format not found' },
@@ -70,7 +71,7 @@ export async function DELETE(request, { params }) {
       )
     }
 
-    await Format.findByIdAndDelete(params.id)
+    await Format.findByIdAndDelete(req.id)
     return NextResponse.json({ message: 'Format deleted successfully' })
   } catch (error) {
     console.error('Error deleting format:', error)
@@ -79,4 +80,4 @@ export async function DELETE(request, { params }) {
       { status: 500 }
     )
   }
-} 
+})

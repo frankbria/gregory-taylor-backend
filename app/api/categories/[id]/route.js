@@ -1,15 +1,22 @@
 import { connectToDB } from '@/lib/db'
 import Category from '@/models/Category'
+import { adminAuth } from '@/lib/adminAuth'
 
-export async function PUT(req, { params }) {
-  await connectToDB()
-  const body = await req.json()
-  const updated = await Category.findByIdAndUpdate(params.id, body, { new: true })
-  return Response.json(updated)
-}
 
-export async function DELETE(req, { params }) {
-  await connectToDB()
-  await Category.findByIdAndDelete(params.id)
-  return new Response(null, { status: 204 })
-}
+export const PUT = adminAuth(async (req) =>
+  {
+    await connectToDB()
+    
+    const body = await req.json()
+    const updated = await Category.findByIdAndUpdate(req.id, body, { new: true })
+    return Response.json(updated)
+})
+
+export const DELETE = adminAuth(async (req)  => 
+  {
+    const catId = req.id
+
+    await connectToDB()
+    await Category.findByIdAndDelete(catId)
+    return new Response(null, { status: 204 })
+})

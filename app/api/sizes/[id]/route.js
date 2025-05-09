@@ -3,16 +3,17 @@ export const runtime = "nodejs";
 
 import { connectToDB } from '@/lib/db'
 import Size from '@/models/Size'
+import { adminAuth } from '@/lib/adminAuth'
 
-export async function PUT(req, { params }) {
+export const PUT = adminAuth(async (req) => {
   await connectToDB()
   const body = await req.json()
-  const updated = await Size.findByIdAndUpdate(params.id, body, { new: true })
+  const updated = await Size.findByIdAndUpdate(req.id, body, { new: true })
   return Response.json(updated)
-}
+})
 
-export async function DELETE(req, { params }) {
+export const DELETE = adminAuth(async (req) => {
   await connectToDB()
-  await Size.findByIdAndDelete(params.id)
+  await Size.findByIdAndDelete(req.id)
   return new Response(null, { status: 204 })
-}
+})

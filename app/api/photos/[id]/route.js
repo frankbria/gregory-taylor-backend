@@ -7,6 +7,7 @@ import Category from '@/models/Category'
 import { v2 as cloudinary } from 'cloudinary'
 import mongoose from 'mongoose'
 import { generateSlug, ensureUniqueSlug } from '@/lib/utils'
+import { adminAuth } from '@/lib/adminAuth'
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -51,7 +52,7 @@ export async function GET(request, { params }) {
   }
 }
 
-export async function PUT(request) {
+export const PUT = adminAuth(async (request) => {
   try {
     await connectToDB()
     
@@ -127,12 +128,17 @@ export async function PUT(request) {
     console.error('Error updating photo:', error)
     return new Response('Error updating photo', { status: 500 })
   }
-}
+})
 
-export async function DELETE(req, { params }) {
+export const DELETE = adminAuth(async (req) => {
+  // Extract ID from the URL instead of using params
+  const url = new URL(req.url)
+  const pathParts = url.pathname.split('/')
+  const id = pathParts[pathParts.length - 1]
+
   await connectToDB()
 
-  const photo = await Photo.findById(params.id)
+  const photo = await Photo.findById(id)
   if (!photo) return new Response('Photo not found', { status: 404 })
 
   // Delete from Cloudinary
@@ -147,11 +153,11 @@ export async function DELETE(req, { params }) {
 
   // Delete from MongoDB
   try {
-    await Photo.findByIdAndDelete(params.id)
+    await Photo.findByIdAndDelete(id)
   } catch (err) {
     console.error('DB delete error:', err)
     return new Response('Error deleting from database', { status: 500 })
   }
 
   return new Response('Photo deleted successfully', { status: 200 })
-}
+})

@@ -8,6 +8,7 @@ import Photo from '@/models/Photo'
 import Category from '@/models/Category'
 import Size from '@/models/Size' // Add this import
 import { generateSlug, ensureUniqueSlug } from '@/lib/utils'
+import { adminAuth } from '@/lib/adminAuth'
 
 export const dynamic = 'force-dynamic' // allows POST in serverless
 
@@ -43,7 +44,7 @@ export async function GET() {
 }
 
 // POST a new photo
-export async function POST(request) {
+export const POST = adminAuth(async (request) => {
   try {
     await connectToDB()
     const data = await request.json()
@@ -85,14 +86,14 @@ export async function POST(request) {
       { status: 500 }
     )
   }
-}
+})
 
 // PUT update a photo
-export async function PUT(request) {
+export const PUT = adminAuth(async (req) => {
   try {
     await connectToDB()
-    const data = await request.json()
-    
+    const data = await req.json()
+
     // If title is being updated, generate a new slug
     if (data.title) {
       const baseSlug = generateSlug(data.title)
@@ -117,4 +118,4 @@ export async function PUT(request) {
       { status: 500 }
     )
   }
-}
+})

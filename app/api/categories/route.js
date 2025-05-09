@@ -6,6 +6,7 @@ import { connectToDB } from '@/lib/db'
 import Category from '@/models/Category'
 import Photo from '@/models/Photo'
 import { corsHeaders } from '@/lib/utils'
+import { adminAuth } from '@/lib/adminAuth'
 
 export const dynamic = 'force-dynamic' // allows POST in serverless
 
@@ -44,7 +45,7 @@ export async function GET(req) {
 }
 
 // 🟡 POST: Create a new category
-export async function POST(req) {
+export const POST = adminAuth(async (req) => {
   await connectToDB()
   const body = await req.json()
   const newCategory = new Category(body)
@@ -54,7 +55,7 @@ export async function POST(req) {
     status: 201,
     headers: corsHeaders(req),
   })
-}
+})
 
 // 🟠 OPTIONS: Handle CORS preflight requests
 export async function OPTIONS(req) {

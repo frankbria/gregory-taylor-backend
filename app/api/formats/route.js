@@ -4,6 +4,7 @@ export const runtime = "nodejs";
 import { connectToDB } from '@/lib/db'
 import Format from '@/models/Format'
 import { NextResponse } from 'next/server'
+import { adminAuth } from '@/lib/adminAuth'
 
 export const dynamic = 'force-dynamic'
 
@@ -44,7 +45,7 @@ export async function GET() {
 }
 
 // POST a new format
-export async function POST(req) {
+export const POST = adminAuth(async (req) => {
   try {
     await connectToDB()
     const body = await req.json()
@@ -58,10 +59,10 @@ export async function POST(req) {
       { status: 500 }
     )
   }
-}
+})
 
 // PUT update a format
-export async function PUT(req) {
+export const PUT = adminAuth(async (req) => {
   try {
     await connectToDB()
     const body = await req.json()
@@ -88,4 +89,4 @@ export async function PUT(req) {
       { status: 500 }
     )
   }
-} 
+})

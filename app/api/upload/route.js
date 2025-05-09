@@ -2,6 +2,7 @@
 export const runtime = "nodejs";
 
 import { v2 as cloudinary } from 'cloudinary'
+import { adminAuth } from '@/lib/adminAuth'
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -11,7 +12,7 @@ cloudinary.config({
 
 export const dynamic = 'force-dynamic'
 
-export async function POST(req) {
+export const POST = adminAuth(async (req) => {  
   try {
     const data = await req.formData()
     const file = data.get('file')
@@ -34,9 +35,10 @@ export async function POST(req) {
 
     return Response.json({ 
         url: result.secure_url,
-        publicID: result.public_id,})
+        publicID: result.public_id,
+    })
   } catch (err) {
     console.error('Upload error:', err)
     return new Response('Upload failed', { status: 500 })
   }
-}
+})

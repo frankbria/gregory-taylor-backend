@@ -3,6 +3,7 @@ export const runtime = "nodejs";
 
 import { connectToDB } from '@/lib/db'
 import Size from '@/models/Size'
+import { adminAuth } from '@/lib/adminAuth'
 
 export async function GET() {
   await connectToDB()
@@ -10,9 +11,9 @@ export async function GET() {
   return Response.json(sizes)
 }
 
-export async function POST(req) {
+export const POST = adminAuth(async (req) => {
   await connectToDB()
   const body = await req.json()
   const size = await Size.create(body)
   return Response.json(size, { status: 201 })
-}
+})
