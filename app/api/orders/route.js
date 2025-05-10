@@ -20,6 +20,7 @@ export const POST = adminAuth(async(req) => {
 
 // GET all or single order or by user
 export const GET = adminAuth(async(req) => {
+  console.log('Auth header in GET orders:', req.headers.get('Authorization'));
   await connectToDB();
   const url = new URL(req.url);
   const id = url.searchParams.get('id');

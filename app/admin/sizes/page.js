@@ -1,17 +1,16 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import axios from 'axios'
+import apiClient from '@/lib/apiClient'
 import { toast } from 'react-hot-toast'
 
 export default function ManageSizesPage() {
   const [sizes, setSizes] = useState([])
   const [form, setForm] = useState({ name: '', width: '', height: '', price: '' })
   const [editingId, setEditingId] = useState(null)
-
   useEffect(() => {
     const fetchSizes = async () => {
-      const res = await axios.get('/api/sizes')
+      const res = await apiClient.get('/api/sizes')
       setSizes(res.data)
     }
     fetchSizes()
@@ -24,20 +23,19 @@ export default function ManageSizesPage() {
 
   const handleSubmit = async e => {
     e.preventDefault()
-    try {
-      if (editingId) {
+    try {      if (editingId) {
         await toast.promise(
-          axios.put(`/api/sizes/${editingId}`, form),
+          apiClient.put(`/api/sizes/${editingId}`, form),
           { loading: 'Saving...', success: 'Size updated!', error: 'Update failed.' }
         )
       } else {
         await toast.promise(
-          axios.post('/api/sizes', form),
+          apiClient.post('/api/sizes', form),
           { loading: 'Creating...', success: 'Size added!', error: 'Create failed.' }
         )
       }
 
-      const res = await axios.get('/api/sizes')
+      const res = await apiClient.get('/api/sizes')
       setSizes(res.data)
       setForm({ name: '', width: '', height: '', price: '' })
       setEditingId(null)
@@ -62,7 +60,7 @@ export default function ManageSizesPage() {
 
     try {
       await toast.promise(
-        axios.delete(`/api/sizes/${id}`),
+        apiClient.delete(`/api/sizes/${id}`),
         { loading: 'Deleting...', success: 'Size deleted!', error: 'Delete failed.' }
       )
       setSizes(prev => prev.filter(size => size._id !== id))

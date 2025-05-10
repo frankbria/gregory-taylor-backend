@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import axios from 'axios'
+import apiClient from '@/lib/apiClient'
 import { toast } from 'react-hot-toast'
 
 export default function ManagePricesPage() {
@@ -11,10 +11,9 @@ export default function ManagePricesPage() {
   const [editingId, setEditingId] = useState(null)
 
   useEffect(() => {
-    const fetchData = async () => {
-      const [sizesRes, pricesRes] = await Promise.all([
-        axios.get('/api/sizes'),
-        axios.get('/api/prices'),
+    const fetchData = async () => {      const [sizesRes, pricesRes] = await Promise.all([
+        apiClient.get('/api/sizes'),
+        apiClient.get('/api/prices'),
       ])
       setSizes(sizesRes.data)
       setPrices(pricesRes.data)
@@ -39,17 +38,17 @@ export default function ManagePricesPage() {
     try {
       if (editingId) {
         await toast.promise(
-          axios.put(`/api/prices/${editingId}`, form),
+          apiClient.put(`/api/prices/${editingId}`, form),
           { loading: 'Saving...', success: 'Price updated!', error: 'Update failed.' }
         )
       } else {
         await toast.promise(
-          axios.post('/api/prices', form),
+          apiClient.post('/api/prices', form),
           { loading: 'Creating...', success: 'Price added!', error: 'Create failed.' }
         )
       }
 
-      const res = await axios.get('/api/prices')
+      const res = await apiClient.get('/api/prices')
       setPrices(res.data)
       setForm({ sizeId: '', price: '', label: '' })
       setEditingId(null)
@@ -71,7 +70,7 @@ export default function ManagePricesPage() {
   const handleDelete = async id => {
     if (!confirm('Delete this price?')) return
     await toast.promise(
-      axios.delete(`/api/prices/${id}`),
+      apiClient.delete(`/api/prices/${id}`),
       { loading: 'Deleting...', success: 'Price deleted!', error: 'Delete failed.' }
     )
     setPrices(prev => prev.filter(p => p._id !== id))

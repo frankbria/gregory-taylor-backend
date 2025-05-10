@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import axios from 'axios'
+import apiClient from '@/lib/apiClient'
 import { useParams } from 'next/navigation'
 import { toast } from 'react-hot-toast'
 
@@ -13,7 +13,7 @@ export default function OrderDetailPage() {
   useEffect(() => {
     async function fetchOrder() {
       try {
-        const res = await axios.get(`/api/orders?id=${id}`)
+        const res = await apiClient.get(`/api/orders?id=${id}`)
         setOrder(res.data)
       } catch (err) {
         console.error(err)
@@ -26,7 +26,7 @@ export default function OrderDetailPage() {
   const handleStatusChange = async (newStatus) => {
     setLoading(true)
     try {
-      const res = await axios.put('/api/orders', { id, status: newStatus })
+      const res = await apiClient.put('/api/orders', { id, status: newStatus })
       setOrder(res.data)
       toast.success('Order status updated')
     } catch (err) {

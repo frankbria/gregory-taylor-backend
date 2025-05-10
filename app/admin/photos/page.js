@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import axios from 'axios'
+import apiClient from '@/lib/apiClient'
 import Image from 'next/image'
 import Link from 'next/link'
 import { toast } from 'react-hot-toast'
@@ -13,9 +13,8 @@ export default function AdminPhotosPage() {
   const handleDelete = async (id) => {
     if (!confirm('Are you sure you want to delete this photo?')) return
 
-    try {
-      await toast.promise(
-        axios.delete(`/api/photos/${id}`),
+    try {      await toast.promise(
+        apiClient.delete(`/api/photos/${id}`),
         {
           loading: 'Deleting photo...',
           success: 'Photo deleted!',
@@ -41,7 +40,7 @@ export default function AdminPhotosPage() {
   useEffect(() => {
     const fetchPhotos = async () => {
       try {
-        const res = await axios.get('/api/photos')
+        const res = await apiClient.get('/api/photos')
         setPhotos(res.data)
         
         // Initialize all categories as expanded

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import apiClient from '@/lib/apiClient'
 import { toast } from 'react-hot-toast'
 
 export default function FramesPage() {
@@ -15,13 +16,10 @@ export default function FramesPage() {
   useEffect(() => {
     fetchFrames()
   }, [])
-
   const fetchFrames = async () => {
     try {
-      const response = await fetch('/api/frames')
-      if (!response.ok) throw new Error('Failed to fetch frames')
-      const data = await response.json()
-      setFrames(data)
+      const response = await apiClient.get('/api/frames')
+      setFrames(response.data)
     } catch (error) {
       toast.error('Error loading frames: ' + error.message)
     } finally {
@@ -55,16 +53,10 @@ export default function FramesPage() {
       if (editingFrame) {
         payload._id = editingFrame._id
       }
+        const response = method === 'POST' 
+        ? await apiClient.post(url, payload)
+        : await apiClient.put(url, payload)
       
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      })
-      
-      if (!response.ok) throw new Error('Failed to save frame')
       
       toast.success(editingFrame ? 'Frame updated successfully' : 'Frame added successfully')
       setFormData({ style: '', price: '' })
@@ -86,12 +78,7 @@ export default function FramesPage() {
   const handleDelete = async (id) => {
     if (!confirm('Are you sure you want to delete this frame?')) return
     
-    try {
-      const response = await fetch(`/api/frames/${id}`, {
-        method: 'DELETE'
-      })
-      
-      if (!response.ok) throw new Error('Failed to delete frame')
+    try {      await apiClient.delete(`/api/frames/${id}`)
       
       toast.success('Frame deleted successfully')
       fetchFrames()

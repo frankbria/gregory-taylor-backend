@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import axios from 'axios'
+import apiClient from '@/lib/apiClient'
 import { toast } from 'react-hot-toast'
 
 export default function AdminFormatsPage() {
@@ -12,10 +12,9 @@ export default function AdminFormatsPage() {
   useEffect(() => {
     fetchFormats()
   }, [])
-
   const fetchFormats = async () => {
     try {
-      const res = await axios.get('/api/formats')
+      const res = await apiClient.get('/api/formats')
       setFormats(res.data)
     } catch (err) {
       console.error('Error loading formats:', err)
@@ -39,12 +38,12 @@ export default function AdminFormatsPage() {
     try {
       if (editing) {
         await toast.promise(
-          axios.put(`/api/formats/${editing._id}`, form),
+          apiClient.put(`/api/formats/${editing._id}`, form),
           { loading: 'Saving...', success: 'Format updated!', error: 'Update failed.' }
         )
       } else {
         await toast.promise(
-          axios.post('/api/formats', form),
+          apiClient.post('/api/formats', form),
           { loading: 'Creating...', success: 'Format added!', error: 'Create failed.' }
         )
       }
@@ -68,7 +67,7 @@ export default function AdminFormatsPage() {
 
     try {
       await toast.promise(
-        axios.delete(`/api/formats/${id}`),
+        apiClient.delete(`/api/formats/${id}`),
         { loading: 'Deleting...', success: 'Format deleted!', error: 'Delete failed.' }
       )
       setFormats(prev => prev.filter(format => format._id !== id))

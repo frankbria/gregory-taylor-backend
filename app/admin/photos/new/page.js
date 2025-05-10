@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, use } from 'react'
-import axios from 'axios'
+import apiClient from '@/lib/apiClient'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { toast } from 'react-hot-toast'
@@ -33,11 +33,11 @@ export default function AddPhotoPage() {
     const fetchData = async () => {
       try {
         // Fetch categories
-        const categoriesRes = await axios.get('/api/categories')
+        const categoriesRes = await apiClient.get('/api/categories')
         setCategories(categoriesRes.data)
 
         // Fetch sizes
-        const sizesRes = await axios.get('/api/sizes')
+        const sizesRes = await apiClient.get('/api/sizes')
         setSizes(sizesRes.data)
       } catch (err) {
         console.error('Error loading data:', err)
@@ -87,7 +87,7 @@ export default function AddPhotoPage() {
         formData.append('file', imageFile)
 
         const uploadRes = await toast.promise(
-        axios.post('/api/upload', formData),
+        apiClient.post('/api/upload', formData),
         {
             loading: 'Uploading image...',
             success: 'Image uploaded!',
@@ -109,7 +109,7 @@ export default function AddPhotoPage() {
         console.log('Sending photo data:', photoData)
 
         await toast.promise(
-        axios.post('/api/photos', photoData),
+        apiClient.post('/api/photos', photoData),
         {
             loading: 'Saving photo...',
             success: 'Photo saved!',

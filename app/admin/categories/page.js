@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import axios from 'axios'
 import { toast } from 'react-hot-toast'
 import { generateSlug } from '@/lib/utils'
+import apiClient from '@/lib/apiClient'
 
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState([])
@@ -13,10 +13,9 @@ export default function AdminCategoriesPage() {
   useEffect(() => {
     fetchCategories()
   }, [])
-
   const fetchCategories = async () => {
     try {
-      const res = await axios.get('/api/categories')
+      const res = await apiClient.get('/api/categories')
       setCategories(res.data)
     } catch (err) {
       console.error('Error loading categories:', err)
@@ -38,15 +37,14 @@ export default function AdminCategoriesPage() {
     if (!form.name.trim()) return toast.error('Name is required')
     if (!form.slug.trim()) return toast.error('Slug is required')
 
-    try {
-      if (editing) {
+    try {      if (editing) {
         await toast.promise(
-          axios.put(`/api/categories/${editing._id}`, form),
+          apiClient.put(`/api/categories/${editing._id}`, form),
           { loading: 'Saving...', success: 'Category updated!', error: 'Update failed.' }
         )
       } else {
         await toast.promise(
-          axios.post('/api/categories', form),
+          apiClient.post('/api/categories', form),
           { loading: 'Creating...', success: 'Category added!', error: 'Create failed.' }
         )
       }
@@ -68,9 +66,8 @@ export default function AdminCategoriesPage() {
   const handleDelete = async id => {
     if (!confirm('Are you sure you want to delete this category?')) return
 
-    try {
-      await toast.promise(
-        axios.delete(`/api/categories/${id}`),
+    try {      await toast.promise(
+        apiClient.delete(`/api/categories/${id}`),
         { loading: 'Deleting...', success: 'Category deleted!', error: 'Delete failed.' }
       )
       setCategories(prev => prev.filter(cat => cat._id !== id))

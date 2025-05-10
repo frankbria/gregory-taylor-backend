@@ -3,21 +3,21 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import axios from 'axios'
+import apiClient from '@/lib/apiClient'
 import Link from 'next/link'
 import { toast } from 'react-hot-toast'
 
 export default function ManageOrdersPage() {
   const [orders, setOrders] = useState([])
   const [activeTab, setActiveTab] = useState('pending')
-
   useEffect(() => {
     async function fetchOrders() {
       try {
-        const res = await axios.get('/api/orders')
+        console.log('Admin API Key available:', !!process.env.NEXT_PUBLIC_ADMIN_API_KEY)
+        const res = await apiClient.get('/api/orders')
         setOrders(res.data)
       } catch (err) {
-        console.error(err)
+        console.error('Error fetching orders:', err.response?.data || err.message)
         toast.error('Error loading orders')
       }
     }

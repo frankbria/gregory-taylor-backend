@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import axios from 'axios'
+import apiClient from '@/lib/apiClient'
 import Image from 'next/image'
 import { toast } from 'react-hot-toast'
 
@@ -31,7 +31,7 @@ export default function EditPhotoPage() {
   useEffect(() => {
     const fetchPhoto = async () => {
       try {
-        const res = await axios.get(`/api/photos/${id}`)
+        const res = await apiClient.get(`/api/photos/${id}`)
         setPhoto(res.data)
       } catch (err) {
         console.error(err)
@@ -44,7 +44,7 @@ export default function EditPhotoPage() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await axios.get('/api/categories')
+        const res = await apiClient.get('/api/categories')
         setCategories(res.data)
       } catch (err) {
         console.error('Error loading categories:', err)
@@ -54,7 +54,7 @@ export default function EditPhotoPage() {
 
     const fetchSizes = async () => {
       try {
-        const res = await axios.get('/api/sizes')
+        const res = await apiClient.get('/api/sizes')
         setSizesList(res.data)
       } catch (err) {
         console.error('Error loading sizes:', err)
@@ -94,7 +94,7 @@ export default function EditPhotoPage() {
     e.preventDefault()
     try {
       await toast.promise(
-        axios.put(`/api/photos/${id}`, {
+        apiClient.put(`/api/photos/${id}`, {
           ...form,
           keywords: form.keywords.split(',').map(k => k.trim()),
           sizes: form.useDefaultSizes ? [] : form.sizes,
@@ -116,7 +116,7 @@ export default function EditPhotoPage() {
 
     try {
       await toast.promise(
-        axios.delete(`/api/photos/${id}`),
+        apiClient.delete(`/api/photos/${id}`),
         {
           loading: 'Deleting...',
           success: 'Photo deleted!',
