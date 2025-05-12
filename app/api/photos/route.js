@@ -9,6 +9,8 @@ import Category from '@/models/Category'
 import Size from '@/models/Size' // Add this import
 import { generateSlug, ensureUniqueSlug } from '@/lib/utils'
 import { adminAuth } from '@/lib/adminAuth'
+import { corsHeaders } from '@/lib/utils'
+
 
 export const dynamic = 'force-dynamic' // allows POST in serverless
 
@@ -23,9 +25,12 @@ async function checkPhotoSlugExists(slug, excludeId = null) {
 }
 
 // GET all photos
-export async function GET() {
+export async function GET(request) {
 
   // console.log("Clerk secret is:", !!process.env.CLERK_SECRET_KEY);
+  
+  // const query = request.query ? request.query : {}
+  // console.log('Query:', query)
 
   try {
     await connectToDB()
@@ -33,15 +38,16 @@ export async function GET() {
       .populate('category')
       .populate('sizes')
       .sort({ createdAt: -1 }) // Sort by newest first
-    return NextResponse.json(photos)
+    return new Response(JSON.stringify(photos), {
+      headers: corsHeaders(request)
+    })
   } catch (error) {
     console.error('Error fetching photos:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch photos', details: error.message },
-      { status: 500 }
+    return new Response( "Error fetching photos", { status: 500,
+      headers: corsHeaders(request) }
     )
+     }   
   }
-}
 
 // POST a new photo
 export const POST = adminAuth(async (request) => {

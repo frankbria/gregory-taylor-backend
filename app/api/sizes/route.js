@@ -4,11 +4,12 @@ export const runtime = "nodejs";
 import { connectToDB } from '@/lib/db'
 import Size from '@/models/Size'
 import { adminAuth } from '@/lib/adminAuth'
+import { corsHeaders } from '@/lib/utils'
 
-export async function GET() {
+export async function GET(req) {
   await connectToDB()
   const sizes = await Size.find().sort({ createdAt: -1 })
-  return Response.json(sizes)
+  return Response.json(sizes, { headers: corsHeaders(req) })
 }
 
 export const POST = adminAuth(async (req) => {

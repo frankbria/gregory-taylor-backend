@@ -5,11 +5,12 @@ import { connectToDB } from '@/lib/db'
 import Frame from '@/models/Frame'
 import { NextResponse } from 'next/server'
 import { adminAuth } from '@/lib/adminAuth'
+import { corsHeaders } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
 // GET all frames
-export async function GET() {
+export async function GET(req) {
   try {
     await connectToDB()
     
@@ -33,8 +34,11 @@ export async function GET() {
     // Fetch all frames
     const frames = await Frame.find().sort({ style: 1 })
     console.log(`Found ${frames.length} frames`)
-    
-    return NextResponse.json(frames)
+
+    return new Response(JSON.stringify(frames), {
+      status: 200,
+      headers: corsHeaders(req)
+    })
   } catch (error) {
     console.error('Error fetching frames:', error)
     return NextResponse.json(

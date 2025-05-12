@@ -5,11 +5,12 @@ import { connectToDB } from '@/lib/db'
 import Format from '@/models/Format'
 import { NextResponse } from 'next/server'
 import { adminAuth } from '@/lib/adminAuth'
+import { corsHeaders } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
 // GET all formats
-export async function GET() {
+export async function GET(req) {
   try {
     await connectToDB()
     
@@ -34,7 +35,10 @@ export async function GET() {
     const formats = await Format.find().sort({ name: 1 })
     console.log(`Found ${formats.length} formats`)
     
-    return NextResponse.json(formats)
+    return new Response(JSON.stringify(formats), {
+      status: 200,
+      headers: corsHeaders(req)
+    })
   } catch (error) {
     console.error('Error fetching formats:', error)
     return NextResponse.json(

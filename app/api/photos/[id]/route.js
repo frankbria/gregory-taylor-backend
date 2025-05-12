@@ -8,6 +8,7 @@ import { v2 as cloudinary } from 'cloudinary'
 import mongoose from 'mongoose'
 import { generateSlug, ensureUniqueSlug } from '@/lib/utils'
 import { adminAuth } from '@/lib/adminAuth'
+import { corsHeaders } from '@/lib/utils'
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -44,11 +45,11 @@ export async function GET(request, { params }) {
   try {
     await connectToDB()
     const photo = await Photo.findById(params.id).populate('category sizes')
-    if (!photo) return new Response('Photo not found', { status: 404 })
-    return Response.json(photo)
+    if (!photo) return new Response('Photo not found', { status: 404, headers: corsHeaders(request) })
+    return Response.json(photo, { status: 200, headers: corsHeaders(request) })
   } catch (error) {
     console.error('Error fetching photo:', error)
-    return new Response('Error fetching photo', { status: 500 })
+    return new Response('Error fetching photo', { status: 500, headers: corsHeaders(request) })
   }
 }
 

@@ -5,6 +5,7 @@ import { connectToDB } from '@/lib/db'
 import Photo from '@/models/Photo'
 import Category from '@/models/Category'
 import Size from '@/models/Size'
+import { corsHeaders } from '@/lib/utils'
 // import Frame from '@/models/Frame' // Uncomment if you use .populate('frames')
 
 export const dynamic = 'force-dynamic'
@@ -26,12 +27,15 @@ export async function GET(req) {
       //.populate('formats')
 
     if (!photo) {
-      return new Response('Photo not found', { status: 404 })
+      return new Response('Photo not found', { status: 404, headers: corsHeaders(req) })
     }
 
-    return Response.json(photo)
+    return Response.json(photo, {
+      status: 200,
+      headers: corsHeaders(req)
+    })
   } catch (err) {
     console.error('Error fetching photo:', err)
-    return new Response('Error fetching photo', { status: 500 })
+    return new Response('Error fetching photo', { status: 500, headers: corsHeaders(req) })
   }
 }
