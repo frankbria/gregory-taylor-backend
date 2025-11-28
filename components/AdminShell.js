@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
+import { useSession, signOut } from '@/lib/auth-client'
 import { useState, useEffect } from 'react'
 import apiClient from '@/lib/apiClient'
 
@@ -19,8 +19,12 @@ const navItems = [
 
 export default function AdminShell({ children }) {
   const pathname = usePathname()
+  const { data: session, isPending } = useSession()
   const [pendingCount, setPendingCount] = useState(0)
-  useEffect(() => {    async function fetchPendingCount() {
+  const [showUserMenu, setShowUserMenu] = useState(false)
+
+  useEffect(() => {
+    async function fetchPendingCount() {
       try {
         const res = await apiClient.get('/api/orders')
         const data = res.data
@@ -34,17 +38,30 @@ export default function AdminShell({ children }) {
     fetchPendingCount()
   }, [])
 
+  const handleSignOut = async () => {
+    await signOut()
+    window.location.href = '/'
+  }
+
+  if (isPending) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-100">
+        <div className="text-gray-600">Loading...</div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex h-screen">
-      <aside className="w-64 bg-gray-900 text-white p-4 space-y-4 overflow-y-auto">
+      <aside className="w-64 bg-gray-900 text-white p-4 flex flex-col gap-4 overflow-y-auto">
         <div className="flex flex-col items-center space-y-2 mb-6">
-            <Image
-                src="/android-chrome-192x192-rev.png"
-                alt="Logo"
-                width={100}
-                height={100}
-                className="rounded bg-white p-1"
-            />
+          <Image
+            src="/android-chrome-192x192-rev.png"
+            alt="Logo"
+            width={100}
+            height={100}
+            className="rounded bg-white p-1"
+          />
         </div>
         <h2 className="text-xl font-bold mb-6">Admin Dashboard</h2>
         <nav className="space-y-2">
@@ -65,18 +82,46 @@ export default function AdminShell({ children }) {
             </Link>
           ))}
         </nav>
+
+        {/* User menu at bottom of sidebar */}
+        {session && (
+          <div className="mt-auto pt-4 border-t border-gray-700">
+            <div className="relative">
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="flex items-center space-x-2 w-full px-3 py-2 rounded hover:bg-gray-700"
+              >
+                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-sm font-medium">
+                  {session.user?.name?.charAt(0)?.toUpperCase() || session.user?.email?.charAt(0)?.toUpperCase() || '?'}
+                </div>
+                <span className="text-sm truncate">{session.user?.email}</span>
+              </button>
+              {showUserMenu && (
+                <div className="absolute bottom-full left-0 mb-2 w-full bg-gray-800 rounded shadow-lg">
+                  <button
+                    onClick={handleSignOut}
+                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-700 rounded"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </aside>
 
       <main className="flex-1 bg-gray-100 p-6 overflow-y-auto">
-        <SignedIn>{children}</SignedIn>
-        <SignedOut>
+        {session ? (
+          children
+        ) : (
           <div className="text-center mt-20">
             <p className="text-lg mb-4 text-gray-800">You must be signed in to access admin.</p>
-            <Link href="/sign-in?redirect_url=/admin" className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">
+            <Link href="/sign-in" className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">
               Sign In
             </Link>
           </div>
-        </SignedOut>
+        )}
       </main>
     </div>
   )
