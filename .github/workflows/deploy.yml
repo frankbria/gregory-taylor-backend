@@ -97,6 +97,7 @@ jobs:
           CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
           CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
           CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
+          NEXT_PUBLIC_INVITE_CODE: ${{ secrets.INVITE_CODE }}
 
       - name: Setup SSH
         run: |
@@ -128,6 +129,7 @@ jobs:
           CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}
           CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}
           CORS_ALLOWED_ORIGINS=${{ secrets.CORS_ALLOWED_ORIGINS }}
+          INVITE_CODE=${{ secrets.INVITE_CODE }}
           PORT=${{ vars.APP_PORT }}
           EOF
 
@@ -147,12 +149,11 @@ jobs:
           # Install production dependencies only
           npm ci --production
 
-          # Reload or start PM2 app
-          if pm2 describe ${{ vars.PM2_APP_NAME }} > /dev/null 2>&1; then
-            pm2 reload ecosystem.config.cjs --env production
-          else
-            pm2 start ecosystem.config.cjs --env production
-          fi
+          # Stop and delete existing process (ignore errors if not found)
+          pm2 delete ${{ vars.PM2_APP_NAME }} 2>/dev/null || true
+
+          # Start fresh
+          pm2 start ecosystem.config.cjs --env production
 
           # Save PM2 process list
           pm2 save

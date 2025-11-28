@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSession, signUp } from "@/lib/auth-client";
 import Link from "next/link";
 import Image from "next/image";
 
 export default function SignUpPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session, isPending } = useSession();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -15,6 +16,11 @@ export default function SignUpPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Check invite code from URL
+  const inviteCode = searchParams.get("code");
+  const expectedCode = process.env.NEXT_PUBLIC_INVITE_CODE;
+  const isInviteValid = !expectedCode || inviteCode === expectedCode;
 
   // Redirect if already signed in
   useEffect(() => {
@@ -40,9 +46,9 @@ export default function SignUpPage() {
     setLoading(true);
 
     try {
-      // Send confirmPassword to server for defense-in-depth validation
+      // Send confirmPassword and inviteCode to server for defense-in-depth validation
       await signUp.email(
-        { name, email, password, confirmPassword },
+        { name, email, password, confirmPassword, inviteCode },
         {
           onSuccess: () => {
             router.push("/admin");
@@ -63,6 +69,35 @@ export default function SignUpPage() {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-100">
         <div className="text-gray-600">Loading...</div>
+      </div>
+    );
+  }
+
+  // Show closed message if invite code is required but invalid
+  if (!isInviteValid) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-gray-100">
+        <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
+          <div className="flex flex-col items-center">
+            <Image
+              src="/android-chrome-192x192.png"
+              alt="Logo"
+              width={80}
+              height={80}
+              className="mb-4"
+            />
+            <h1 className="text-2xl font-bold text-center text-gray-900">Registration Closed</h1>
+            <p className="text-gray-600 text-center mt-2">
+              New account registration requires an invitation.
+            </p>
+          </div>
+          <div className="text-center text-sm text-gray-600">
+            Already have an account?{" "}
+            <Link href="/sign-in" className="text-blue-600 hover:text-blue-700 font-medium">
+              Sign In
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }
