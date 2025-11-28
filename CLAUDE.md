@@ -9,7 +9,7 @@ Gregory Taylor Backend - A Next.js 15 application serving as the backend/admin d
 - Admin dashboard for managing photos, categories, sizes, frames, formats, prices, and orders
 - Stripe integration for checkout and webhooks
 - Cloudinary integration for image storage
-- Clerk authentication for admin access
+- Better Auth for admin authentication (self-hosted)
 
 ## Commands
 
@@ -27,16 +27,23 @@ npm run lint     # Run ESLint
 - **Protected endpoints**: POST/PUT/DELETE operations require `Authorization: Bearer <ADMIN_API_KEY>` header
 - All routes use `export const runtime = "nodejs"` for MongoDB compatibility
 
-### Authentication Pattern
+### Authentication
+
+**UI Authentication (Better Auth)**:
+- `lib/auth.js` - Server-side Better Auth config with MongoDB adapter
+- `lib/auth-client.js` - Client-side auth hooks (`useSession`, `signIn`, `signOut`)
+- `app/api/auth/[...all]/route.js` - Better Auth API endpoints
+- `components/Providers.js` - AuthUIProvider wrapper
+
+**API Authentication (Token-based)**:
 ```javascript
 // Public GET, protected modifications
 export async function GET(request) { /* no auth */ }
 export const POST = adminAuth(async (request) => { /* protected */ })
 ```
 
-- `lib/adminAuth.js` - Token-based auth middleware wrapping handlers
-- `lib/apiClient.js` - Axios client auto-injecting admin API key for admin dashboard requests
-- Clerk handles admin user sign-in (UI only, not API auth)
+- `lib/adminAuth.js` - Token-based auth middleware wrapping API handlers
+- `lib/apiClient.js` - Axios client auto-injecting admin API key for requests
 
 ### Database
 - MongoDB via Mongoose (`lib/db.js`)
@@ -53,15 +60,16 @@ export const POST = adminAuth(async (request) => { /* protected */ })
 `lib/utils.js:corsHeaders()` - Dynamic CORS based on `CORS_ALLOWED_ORIGINS` env var (comma-separated). Must be applied to all API responses serving the external frontend.
 
 ### Admin Dashboard (app/admin/)
-- Uses `AdminShell` component wrapper with Clerk's `SignedIn`/`SignedOut`
-- All admin pages are client components using `apiClient` for authenticated requests
+- Uses `AdminShell` component wrapper with Better Auth session checking
+- All admin pages are client components using `apiClient` for authenticated API requests
+- Middleware redirects unauthenticated users to `/sign-in`
 
 ## Environment Variables
 
 Required:
 - `MONGODB_URI` - MongoDB connection string
+- `BETTER_AUTH_SECRET` - Secret key for Better Auth session encryption
 - `ADMIN_API_KEY` - Token for API authentication
-- `CLERK_SECRET_KEY`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` - Clerk auth
 - `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` - Stripe
 - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` - Image uploads
 - `CORS_ALLOWED_ORIGINS` - Comma-separated allowed origins for CORS

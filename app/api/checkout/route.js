@@ -1,10 +1,20 @@
 // backend/app/api/checkout/route.js
-export const runtime = "nodejs";  
+export const runtime = "nodejs";
 
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+// Initialize Stripe lazily to avoid build-time errors when env vars aren't available
+let stripe = null;
+function getStripe() {
+  if (!stripe) {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error('STRIPE_SECRET_KEY is not defined');
+    }
+    stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+  }
+  return stripe;
+}
 
 export async function POST(request) {
   try {
@@ -26,7 +36,7 @@ export async function POST(request) {
     }))
 
     const origin = request.headers.get('origin') || 'http://localhost:3000'
-    const session = await stripe.checkout.sessions.create({
+    const session = await getStripe().checkout.sessions.create({
       payment_method_types: ['card'],
       line_items,
       mode: 'payment',
