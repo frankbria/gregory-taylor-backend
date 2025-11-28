@@ -72,7 +72,12 @@ Required:
 - `NEXT_PUBLIC_ADMIN_API_KEY` - Token for API authentication (NEXT_PUBLIC_ prefix for client access)
 - `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` - Stripe
 - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` - Image uploads
-- `CORS_ALLOWED_ORIGINS` - Comma-separated allowed origins for CORS
+- `CORS_ALLOWED_ORIGINS` - Comma-separated allowed origins for CORS (must include admin panel's own domain for Better Auth)
+
+Optional:
+- `INVITE_CODE` - If set, requires `/sign-up?code=XXX` for registration
+- `NEXT_PUBLIC_INVITE_CODE` - Client-side version (must match `INVITE_CODE`)
+- `PORT` - Server port (default 4000, use non-default on shared servers)
 
 ## Patterns to Follow
 
@@ -102,3 +107,19 @@ export const POST = adminAuth(async (request) => {
 
 ### Slug Generation
 Use `generateSlug()` and `ensureUniqueSlug()` from `lib/utils.js` when creating resources with URL-friendly identifiers.
+
+## Deployment
+
+### CI/CD
+- GitHub Actions workflow in `.github/workflows/deploy.yml`
+- Builds on GitHub runner, rsyncs to server, restarts PM2
+- Triggers on push to `main` or manual dispatch
+- Uses GitHub Environments (`production`) for secrets/variables
+
+### PM2 Configuration
+- `ecosystem.config.cjs` - PM2 process configuration
+- Uses delete + start (not reload) for reliability with errored processes
+
+### Key Files
+- `.github/workflows/deploy.yml` - CI/CD pipeline
+- `ecosystem.config.cjs` - PM2 ecosystem config

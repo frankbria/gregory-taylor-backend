@@ -93,6 +93,7 @@ Copy `.env.example` to `.env` and configure:
 | `CLOUDINARY_API_KEY` | Cloudinary API key |
 | `CLOUDINARY_API_SECRET` | Cloudinary API secret |
 | `CORS_ALLOWED_ORIGINS` | Comma-separated allowed origins |
+| `INVITE_CODE` | Secret code for user registration (optional) |
 
 ## API Endpoints
 
@@ -188,9 +189,17 @@ Access the admin dashboard at `/admin` after signing in. Features include:
 
 ## Development
 
-### First Admin User
+### Admin User Registration
 
-After deployment, register the first admin user at `/sign-up`. Better Auth stores users in MongoDB collections:
+Registration is controlled via invite code. If `INVITE_CODE` is set, users must access:
+
+```
+https://yourdomain.com/sign-up?code=YOUR_INVITE_CODE
+```
+
+Without a valid code, the sign-up page displays "Registration Closed". This prevents unauthorized account creation while allowing you to invite specific users.
+
+Better Auth stores users in MongoDB collections:
 - `user` - User accounts
 - `session` - Active sessions
 - `account` - Credential accounts
@@ -205,28 +214,65 @@ CORS_ALLOWED_ORIGINS=https://yourdomain.com,http://localhost:3000
 
 ## Deployment
 
-### Build for Production
+### CI/CD Pipeline
+
+This project uses GitHub Actions for automated deployment:
+
+- **Trigger**: Push to `main` branch or manual workflow dispatch
+- **Process**: Build on GitHub runner → rsync to server → PM2 restart
+- **Environment**: Uses GitHub Environments (`production`) for secrets
+
+#### Required GitHub Secrets (production environment)
+
+| Secret | Description |
+|--------|-------------|
+| `SERVER_HOST` | Server IP/hostname |
+| `SERVER_USER` | SSH username |
+| `SSH_PRIVATE_KEY` | Private key for SSH access |
+| All env vars | Same as `.env.example` |
+
+#### Required GitHub Variables
+
+| Variable | Example | Description |
+|----------|---------|-------------|
+| `DEPLOY_PATH` | `/var/www/gregory-taylor-backend` | Server deployment directory |
+| `APP_PORT` | `4001` | Port for the app (avoid defaults on shared servers) |
+| `PM2_APP_NAME` | `gregory-taylor-backend` | PM2 process name |
+| `SERVER_SSH_PORT` | `22` | SSH port (optional) |
+
+### Manual Deployment
 
 ```bash
 npm run build
 npm run start
 ```
 
-### Environment Setup
+### Server Requirements
 
-Ensure all environment variables are configured in your deployment platform. The `BETTER_AUTH_SECRET` and other secrets should never be exposed to the client bundle.
+- Node.js 20+
+- PM2 (`npm install -g pm2`)
+- Nginx (for reverse proxy/SSL)
 
 ### Post-Deployment Checklist
 
-- [ ] Register first admin user via `/sign-up`
+- [ ] Configure GitHub secrets and variables
+- [ ] Set up nginx server block with SSL (certbot)
+- [ ] Register admin user via `/sign-up?code=YOUR_INVITE_CODE`
 - [ ] Verify sign in/out functionality
 - [ ] Test API endpoints
 - [ ] Configure Stripe webhooks
-- [ ] Verify CORS headers
+- [ ] Verify CORS headers (must include admin panel's own domain)
 
 ## What's New
 
-### Better Auth Migration (Latest)
+### CI/CD & Registration Controls (Latest)
+
+- GitHub Actions CI/CD pipeline with automated deployment
+- PM2 process management for production reliability
+- Invite code protection for user registration
+- Server-side validation prevents registration bypass
+
+### Better Auth Migration
 
 - Replaced Clerk with Better Auth for self-hosted authentication
 - Custom sign-in/sign-up forms with server-side password validation
@@ -235,6 +281,7 @@ Ensure all environment variables are configured in your deployment platform. The
 
 ### Security Improvements
 
+- Invite-only registration when `INVITE_CODE` is set
 - Server-side password validation (minimum 8 characters)
 - Secrets properly isolated from client bundle
 - Lazy initialization for Stripe to avoid build-time errors
