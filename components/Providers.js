@@ -1,8 +1,16 @@
 // components/Providers.js - App providers wrapper
 "use client";
 
+/**
+ * App-wide providers wrapper.
+ *
+ * Note: Better Auth's useSession hook works without a provider wrapper
+ * (unlike NextAuth which requires SessionProvider). The hook manages
+ * session state internally via the authClient instance.
+ *
+ * This component exists as a central place to add future providers
+ * (e.g., theme, toast notifications, etc.) if needed.
+ */
 export function Providers({ children }) {
-  // Better Auth client-side state is managed via the authClient hooks
-  // No additional provider wrapper needed for basic auth functionality
   return <>{children}</>;
 }
