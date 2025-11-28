@@ -53,7 +53,7 @@ export default function AdminShell({ children }) {
 
   return (
     <div className="flex h-screen">
-      <aside className="w-64 bg-gray-900 text-white p-4 space-y-4 overflow-y-auto">
+      <aside className="w-64 bg-gray-900 text-white p-4 flex flex-col gap-4 overflow-y-auto">
         <div className="flex flex-col items-center space-y-2 mb-6">
           <Image
             src="/android-chrome-192x192-rev.png"
