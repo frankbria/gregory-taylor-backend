@@ -15,8 +15,8 @@ const nextConfig = {
   },
   reactStrictMode: true,
   env: {
-    // Better Auth
-    BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
+    // Note: BETTER_AUTH_SECRET is intentionally NOT exposed here
+    // It is read directly from process.env in lib/auth.js (server-only)
     // Cloudinary
     CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
     CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
