@@ -13,6 +13,12 @@ export const dynamic = 'force-dynamic';
 let stripe = null;
 function getStripe() {
   if (!stripe) {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error(
+        'STRIPE_SECRET_KEY environment variable is not set. ' +
+        'Please add it to your .env file or deployment environment.'
+      );
+    }
     stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
   }
   return stripe;
