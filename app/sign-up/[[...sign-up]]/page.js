@@ -40,8 +40,9 @@ export default function SignUpPage() {
     setLoading(true);
 
     try {
+      // Send confirmPassword to server for defense-in-depth validation
       await signUp.email(
-        { name, email, password },
+        { name, email, password, confirmPassword },
         {
           onSuccess: () => {
             router.push("/admin");
