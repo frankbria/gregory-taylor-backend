@@ -29,7 +29,7 @@ const nextConfig = {
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
     // Admin API
-    NEXT_PUBLIC_ADMIN_API_KEY: process.env.ADMIN_API_KEY,
+    NEXT_PUBLIC_ADMIN_API_KEY: process.env.NEXT_PUBLIC_ADMIN_API_KEY,
   },
 }
 

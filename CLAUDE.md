@@ -24,7 +24,7 @@ npm run lint     # Run ESLint
 
 ### API Routes (app/api/)
 - **Public endpoints**: `/api/photos`, `/api/categories`, `/api/sizes`, `/api/frames`, `/api/formats`, `/api/checkout`, `/api/gallery/[slug]`, `/api/photos/by-name/[slug]`
-- **Protected endpoints**: POST/PUT/DELETE operations require `Authorization: Bearer <ADMIN_API_KEY>` header
+- **Protected endpoints**: POST/PUT/DELETE operations require `Authorization: Bearer <NEXT_PUBLIC_ADMIN_API_KEY>` header
 - All routes use `export const runtime = "nodejs"` for MongoDB compatibility
 
 ### Authentication
@@ -69,7 +69,7 @@ export const POST = adminAuth(async (request) => { /* protected */ })
 Required:
 - `MONGODB_URI` - MongoDB connection string
 - `BETTER_AUTH_SECRET` - Secret key for Better Auth session encryption
-- `ADMIN_API_KEY` - Token for API authentication
+- `NEXT_PUBLIC_ADMIN_API_KEY` - Token for API authentication (NEXT_PUBLIC_ prefix for client access)
 - `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` - Stripe
 - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` - Image uploads
 - `CORS_ALLOWED_ORIGINS` - Comma-separated allowed origins for CORS
