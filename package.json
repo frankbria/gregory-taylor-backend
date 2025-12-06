@@ -14,10 +14,10 @@
     "cloudinary": "^2.6.0",
     "cors": "^2.8.5",
     "mongoose": "^8.13.1",
-    "next": "^15.5.6",
+    "next": "^15.5.7",
     "node": "^23.11.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "react": "^19.0.1",
+    "react-dom": "^19.0.1",
     "react-hot-toast": "^2.5.2",
     "stripe": "^18.0.0"
   },
@@ -25,7 +25,7 @@
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "eslint": "^9",
-    "eslint-config-next": "15.2.4",
+    "eslint-config-next": "^15.5.7",
     "tailwindcss": "^4"
   }
 }
