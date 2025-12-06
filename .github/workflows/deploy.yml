@@ -143,7 +143,11 @@ jobs:
       - name: Install dependencies and restart app
         run: |
           ssh -i ~/.ssh/deploy_key -p ${{ vars.SERVER_SSH_PORT || 22 }} \
-            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} bash -l << 'ENDSSH'
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'ENDSSH'
+          # Load nvm
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+          
           cd ${{ vars.DEPLOY_PATH }}
 
           # Install production dependencies only
@@ -166,6 +170,10 @@ jobs:
           sleep 10
           ssh -i ~/.ssh/deploy_key -p ${{ vars.SERVER_SSH_PORT || 22 }} \
             ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'ENDSSH'
+          # Load nvm
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+          
           # Check if the app is running
           if pm2 describe ${{ vars.PM2_APP_NAME }} | grep -q "online"; then
             echo "App is running successfully!"
