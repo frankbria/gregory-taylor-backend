@@ -1,12 +1,19 @@
 // app/api/auth/[...all]/route.js - Better Auth API handler
-import { auth } from "@/lib/auth";
+import { auth, initializeAuth } from "@/lib/auth";
 import { toNextJsHandler } from "better-auth/next-js";
 import { NextResponse } from "next/server";
 
-// Handle case where auth is not initialized (during build time)
-const handler = auth ? toNextJsHandler(auth) : null;
+// Get or initialize the auth handler
+async function getHandler() {
+  const authInstance = auth || (await initializeAuth());
+  if (!authInstance) {
+    return null;
+  }
+  return toNextJsHandler(authInstance);
+}
 
 export async function GET(request, context) {
+  const handler = await getHandler();
   if (!handler) {
     return NextResponse.json(
       { error: "Auth not initialized - check MONGODB_URI" },
@@ -17,6 +24,7 @@ export async function GET(request, context) {
 }
 
 export async function POST(request, context) {
+  const handler = await getHandler();
   if (!handler) {
     return NextResponse.json(
       { error: "Auth not initialized - check MONGODB_URI" },
