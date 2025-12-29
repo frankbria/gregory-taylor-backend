@@ -24,7 +24,7 @@ export async function GET(req, context) {
     }
 
     const photos = await Photo.find({ category: category._id })
-      .select('title imageUrl slug fullLength')
+      .select('title imageUrl slug fullLength width height aspectRatio imageFormat')
       .sort({ createdAt: -1 })
 
     return Response.json({ category, photos },

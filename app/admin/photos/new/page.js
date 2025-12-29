@@ -95,13 +95,17 @@ export default function AddPhotoPage() {
         }
         )
 
-        const { url, publicID } = uploadRes.data
+        const { url, publicID, width, height, aspectRatio, imageFormat } = uploadRes.data
 
         const photoData = {
             ...form,
             title: form.title.trim(),
             imageUrl: url,
             publicID: publicID,
+            width,
+            height,
+            aspectRatio,
+            imageFormat,
             keywords: form.keywords.split(',').map(k => k.trim()),
             sizes: form.useDefaultSizes ? [] : form.sizes || [],
         }

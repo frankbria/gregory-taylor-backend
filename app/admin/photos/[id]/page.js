@@ -146,6 +146,26 @@ export default function EditPhotoPage() {
         />
       </div>
 
+      {/* Image Dimensions Display */}
+      {photo.width && photo.height && (
+        <div className="bg-gray-50 p-4 rounded border border-gray-200">
+          <h3 className="text-sm font-semibold text-gray-700 mb-2">Image Information</h3>
+          <p className="text-sm text-gray-600">
+            <span className="font-medium">Dimensions:</span> {photo.width} × {photo.height} px
+            {photo.aspectRatio && (
+              <span className="ml-2">
+                (Aspect Ratio: {photo.aspectRatio.toFixed(2)})
+              </span>
+            )}
+            {photo.imageFormat && (
+              <span className="ml-2">
+                • Format: {photo.imageFormat.toUpperCase()}
+              </span>
+            )}
+          </p>
+        </div>
+      )}
+
       <form onSubmit={handleSave} className="space-y-4">
         <div>
           <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">Title</label>
