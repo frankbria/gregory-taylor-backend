@@ -104,8 +104,13 @@ async function backfillDimensions() {
       // Update photo with dimension data
       photo.width = resource.width
       photo.height = resource.height
-      photo.aspectRatio = resource.width / resource.height
+      photo.aspectRatio = resource.height > 0 ? resource.width / resource.height : null
       photo.imageFormat = resource.format
+
+      // Warn if height is invalid
+      if (!resource.height || resource.height <= 0) {
+        console.log(`  ⚠ Warning: Invalid height (${resource.height}), aspectRatio set to null`)
+      }
 
       await photo.save()
 

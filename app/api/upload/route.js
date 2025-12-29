@@ -38,7 +38,7 @@ export const POST = adminAuth(async (req) => {
         publicID: result.public_id,
         width: result.width,
         height: result.height,
-        aspectRatio: result.width / result.height,
+        aspectRatio: result.height > 0 ? result.width / result.height : null,
         imageFormat: result.format,
     })
   } catch (err) {
