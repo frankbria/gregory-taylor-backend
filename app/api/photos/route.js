@@ -10,6 +10,7 @@ import Size from '@/models/Size' // Add this import
 import { generateSlug, ensureUniqueSlug } from '@/lib/utils'
 import { adminAuth } from '@/lib/adminAuth'
 import { corsHeaders } from '@/lib/utils'
+import { getDisplayUrl } from '@/lib/cloudinary'
 
 
 export const dynamic = 'force-dynamic' // allows POST in serverless
@@ -28,7 +29,7 @@ async function checkPhotoSlugExists(slug, excludeId = null) {
 export async function GET(request) {
 
   // console.log("Clerk secret is:", !!process.env.CLERK_SECRET_KEY);
-  
+
   // const query = request.query ? request.query : {}
   // console.log('Query:', query)
 
@@ -38,7 +39,34 @@ export async function GET(request) {
       .populate('category')
       .populate('sizes')
       .sort({ createdAt: -1 }) // Sort by newest first
-    return new Response(JSON.stringify(photos), {
+
+    // Transform photos to use displayUrl instead of raw imageUrl and publicID
+    const transformedPhotos = photos.map(photo => {
+      const photoObj = photo.toObject()
+      return {
+        _id: photoObj._id,
+        title: photoObj.title,
+        slug: photoObj.slug,
+        description: photoObj.description,
+        keywords: photoObj.keywords,
+        category: photoObj.category,
+        featured: photoObj.featured,
+        fullLength: photoObj.fullLength,
+        sizes: photoObj.sizes,
+        location: photoObj.location,
+        width: photoObj.width,
+        height: photoObj.height,
+        aspectRatio: photoObj.aspectRatio,
+        imageFormat: photoObj.imageFormat,
+        displayUrl: getDisplayUrl(photoObj.publicID, {
+          width: photoObj.fullLength ? 1600 : 1200
+        }),
+        createdAt: photoObj.createdAt,
+        updatedAt: photoObj.updatedAt,
+      }
+    })
+
+    return new Response(JSON.stringify(transformedPhotos), {
       headers: corsHeaders(request)
     })
   } catch (error) {
@@ -46,7 +74,7 @@ export async function GET(request) {
     return new Response( "Error fetching photos", { status: 500,
       headers: corsHeaders(request) }
     )
-     }   
+     }
   }
 
 // POST a new photo

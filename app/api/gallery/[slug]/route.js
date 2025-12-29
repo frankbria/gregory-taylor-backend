@@ -4,6 +4,7 @@ import { connectToDB } from '@/lib/db'
 import Photo from '@/models/Photo'
 import Category from '@/models/Category'
 import { corsHeaders } from '@/lib/utils'
+import { getDisplayUrl } from '@/lib/cloudinary'
 
 export const dynamic = 'force-dynamic'
 
@@ -24,10 +25,25 @@ export async function GET(req, context) {
     }
 
     const photos = await Photo.find({ category: category._id })
-      .select('title imageUrl slug fullLength width height aspectRatio imageFormat')
+      .select('title publicID slug fullLength width height aspectRatio imageFormat')
       .sort({ createdAt: -1 })
 
-    return Response.json({ category, photos },
+    // Transform photos to use displayUrl instead of raw imageUrl and publicID
+    const transformedPhotos = photos.map(photo => ({
+      _id: photo._id,
+      title: photo.title,
+      slug: photo.slug,
+      fullLength: photo.fullLength,
+      width: photo.width,
+      height: photo.height,
+      aspectRatio: photo.aspectRatio,
+      imageFormat: photo.imageFormat,
+      displayUrl: getDisplayUrl(photo.publicID, {
+        width: photo.fullLength ? 1600 : 1200
+      }),
+    }))
+
+    return Response.json({ category, photos: transformedPhotos },
       {
         status: 200,
         headers: corsHeaders(req),
