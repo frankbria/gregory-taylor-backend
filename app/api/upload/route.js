@@ -33,9 +33,13 @@ export const POST = adminAuth(async (req) => {
         .end(buffer)
     })
 
-    return Response.json({ 
+    return Response.json({
         url: result.secure_url,
         publicID: result.public_id,
+        width: result.width,
+        height: result.height,
+        aspectRatio: result.width / result.height,
+        imageFormat: result.format,
     })
   } catch (err) {
     console.error('Upload error:', err)

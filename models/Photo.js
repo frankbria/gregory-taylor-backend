@@ -63,6 +63,25 @@ const PhotoSchema = new mongoose.Schema({
     ref: 'Format',
     default: null,
   },
+
+  // Image dimensions and metadata from Cloudinary
+  width: {
+    type: Number,
+    default: null,
+  },
+  height: {
+    type: Number,
+    default: null,
+  },
+  aspectRatio: {
+    type: Number,
+    default: null,
+  },
+  imageFormat: {
+    type: String,
+    trim: true,
+    default: null,
+  },
 },
   
   { timestamps: true })
