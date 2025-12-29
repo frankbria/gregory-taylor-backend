@@ -11,6 +11,13 @@ Gregory Taylor Backend - A Next.js 15 application serving as the backend/admin d
 - Cloudinary integration for image storage
 - Better Auth for admin authentication (self-hosted)
 
+## Related Repositories
+
+- **Frontend**: https://github.com/frankbria/gregory-taylor-frontend
+  - Customer-facing photography e-commerce site
+  - Consumes REST API endpoints from this backend
+  - Separate deployment and codebase
+
 ## Commands
 
 ```bash
