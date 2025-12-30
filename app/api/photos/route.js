@@ -71,11 +71,12 @@ export async function GET(request) {
     })
   } catch (error) {
     console.error('Error fetching photos:', error)
-    return new Response( "Error fetching photos", { status: 500,
-      headers: corsHeaders(request) }
-    )
-     }
+    return new Response("Error fetching photos", {
+      status: 500,
+      headers: corsHeaders(request)
+    })
   }
+}
 
 // POST a new photo
 export const POST = adminAuth(async (request) => {
