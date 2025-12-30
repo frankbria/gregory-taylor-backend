@@ -4,17 +4,11 @@ export const runtime = "nodejs";
 import { connectToDB } from '@/lib/db'
 import Photo from '@/models/Photo'
 import Category from '@/models/Category'
-import { v2 as cloudinary } from 'cloudinary'
 import mongoose from 'mongoose'
 import { generateSlug, ensureUniqueSlug } from '@/lib/utils'
 import { adminAuth } from '@/lib/adminAuth'
 import { corsHeaders } from '@/lib/utils'
-
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-})
+import cloudinary, { getDisplayUrl } from '@/lib/cloudinary'
 
 // Helper to slugify titles
 /*
@@ -46,7 +40,32 @@ export async function GET(request, { params }) {
     await connectToDB()
     const photo = await Photo.findById(params.id).populate('category sizes')
     if (!photo) return new Response('Photo not found', { status: 404, headers: corsHeaders(request) })
-    return Response.json(photo, { status: 200, headers: corsHeaders(request) })
+
+    // Transform photo to use displayUrl instead of raw imageUrl and publicID
+    const photoObj = photo.toObject()
+    const transformedPhoto = {
+      _id: photoObj._id,
+      title: photoObj.title,
+      slug: photoObj.slug,
+      description: photoObj.description,
+      keywords: photoObj.keywords,
+      category: photoObj.category,
+      featured: photoObj.featured,
+      fullLength: photoObj.fullLength,
+      sizes: photoObj.sizes,
+      location: photoObj.location,
+      width: photoObj.width,
+      height: photoObj.height,
+      aspectRatio: photoObj.aspectRatio,
+      imageFormat: photoObj.imageFormat,
+      displayUrl: getDisplayUrl(photoObj.publicID, {
+        width: photoObj.fullLength ? 1600 : 1200
+      }),
+      createdAt: photoObj.createdAt,
+      updatedAt: photoObj.updatedAt,
+    }
+
+    return Response.json(transformedPhoto, { status: 200, headers: corsHeaders(request) })
   } catch (error) {
     console.error('Error fetching photo:', error)
     return new Response('Error fetching photo', { status: 500, headers: corsHeaders(request) })
