@@ -46,15 +46,26 @@ export async function GET(req) {
 
 // 🟡 POST: Create a new category
 export const POST = adminAuth(async (req) => {
-  await connectToDB()
-  const body = await req.json()
-  const newCategory = new Category(body)
-  const saved = await newCategory.save()
+  try {
+    await connectToDB()
+    const body = await req.json()
+    const newCategory = new Category(body)
+    const saved = await newCategory.save()
 
-  return new Response(JSON.stringify(saved), {
-    status: 201,
-    headers: corsHeaders(req),
-  })
+    return new Response(JSON.stringify(saved), {
+      status: 201,
+      headers: corsHeaders(req),
+    })
+  } catch (error) {
+    console.error('Error creating category:', error)
+    return new Response(
+      JSON.stringify({ error: 'Failed to create category', details: error.message }),
+      {
+        status: 500,
+        headers: corsHeaders(req),
+      }
+    )
+  }
 })
 
 // 🟠 OPTIONS: Handle CORS preflight requests
