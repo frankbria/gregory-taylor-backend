@@ -68,10 +68,11 @@ describe('/api/categories', () => {
       // Create category with unique name using helper defaults
       const category = await Category.create(createTestCategory())
 
-      // Create a featured photo
+      // Create a featured photo with publicID for Cloudinary transformation
       const featuredPhoto = await Photo.create(
         createTestPhoto(category._id, {
           featured: true,
+          publicID: 'test-photos/featured-wildlife',
           imageUrl: 'https://test.cloudinary.com/featured-wildlife.jpg',
         })
       )
@@ -82,7 +83,10 @@ describe('/api/categories', () => {
 
       expect(response.status).toBe(200)
       expect(data.length).toBe(1)
-      expect(data[0].featuredImage).toBe('https://test.cloudinary.com/featured-wildlife.jpg')
+      // Verify that featuredImage is a Cloudinary URL (transformed from publicID)
+      expect(data[0].featuredImage).toBeDefined()
+      expect(data[0].featuredImage).toContain('cloudinary.com')
+      expect(data[0].featuredImage).toContain('test-photos/featured-wildlife')
     })
 
     it('should have null featuredImage when no featured photo exists', async () => {

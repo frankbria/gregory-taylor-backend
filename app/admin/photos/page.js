@@ -105,9 +105,9 @@ export default function AdminPhotosPage() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                   {category.photos.map(photo => (
                     <div key={photo._id} className="relative group border rounded overflow-hidden shadow-sm bg-white">
-                      {photo.imageUrl ? (
-                        <Image 
-                          src={photo.imageUrl}
+                      {photo.displayUrl ? (
+                        <Image
+                          src={photo.displayUrl}
                           alt={photo.title || 'Photo'}
                           width={400}
                           height={300}
