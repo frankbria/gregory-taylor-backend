@@ -138,7 +138,7 @@ export default function EditPhotoPage() {
 
       <div className="relative w-full aspect-video">
         <Image
-          src={photo.imageUrl}
+          src={photo.displayUrl}
           alt="Uploaded"
           fill
           className="object-contain rounded"

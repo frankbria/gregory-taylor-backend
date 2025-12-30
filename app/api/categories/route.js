@@ -7,6 +7,7 @@ import Category from '@/models/Category'
 import Photo from '@/models/Photo'
 import { corsHeaders } from '@/lib/utils'
 import { adminAuth } from '@/lib/adminAuth'
+import { getDisplayUrl } from '@/lib/cloudinary'
 
 export const dynamic = 'force-dynamic' // allows POST in serverless
 
@@ -24,9 +25,15 @@ export async function GET(req) {
           featured: true,
         })
 
+        // Generate displayUrl from publicID if featured photo exists
+        let featuredImage = null
+        if (featuredPhoto && featuredPhoto.publicID) {
+          featuredImage = getDisplayUrl(featuredPhoto.publicID, { width: 1200 })
+        }
+
         return {
           ...category,
-          featuredImage: featuredPhoto?.imageUrl || null,
+          featuredImage,
         }
       })
     )
