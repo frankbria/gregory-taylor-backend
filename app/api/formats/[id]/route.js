@@ -30,12 +30,12 @@ export async function GET(request, { params }) {
   }
 }
 
-export const PUT = adminAuth(async (req) => {
+export const PUT = adminAuth(async (req, { params }) => {
   try {
     await connectToDB()
     const body = await req.json()
 
-    const format = await Format.findById(req.id)
+    const format = await Format.findById(params.id)
     if (!format) {
       return NextResponse.json(
         { error: 'Format not found' },
@@ -44,7 +44,7 @@ export const PUT = adminAuth(async (req) => {
     }
 
     const updatedFormat = await Format.findByIdAndUpdate(
-      req.id,
+      params.id,
       { $set: body },
       { new: true }
     )
@@ -59,10 +59,10 @@ export const PUT = adminAuth(async (req) => {
   }
 })
 
-export const DELETE = adminAuth(async (req) => {
+export const DELETE = adminAuth(async (req, { params }) => {
   try {
     await connectToDB()
-    const format = await Format.findById(req.id)
+    const format = await Format.findById(params.id)
 
     if (!format) {
       return NextResponse.json(
@@ -71,7 +71,7 @@ export const DELETE = adminAuth(async (req) => {
       )
     }
 
-    await Format.findByIdAndDelete(req.id)
+    await Format.findByIdAndDelete(params.id)
     return NextResponse.json({ message: 'Format deleted successfully' })
   } catch (error) {
     console.error('Error deleting format:', error)

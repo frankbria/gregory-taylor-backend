@@ -5,15 +5,15 @@ import { connectToDB } from '@/lib/db'
 import Size from '@/models/Size'
 import { adminAuth } from '@/lib/adminAuth'
 
-export const PUT = adminAuth(async (req) => {
+export const PUT = adminAuth(async (req, { params }) => {
   await connectToDB()
   const body = await req.json()
-  const updated = await Size.findByIdAndUpdate(req.id, body, { new: true })
+  const updated = await Size.findByIdAndUpdate(params.id, body, { new: true })
   return Response.json(updated)
 })
 
-export const DELETE = adminAuth(async (req) => {
+export const DELETE = adminAuth(async (req, { params }) => {
   await connectToDB()
-  await Size.findByIdAndDelete(req.id)
+  await Size.findByIdAndDelete(params.id)
   return new Response(null, { status: 204 })
 })
