@@ -3,6 +3,8 @@ export const runtime = "nodejs";
 
 import { connectToDB } from '@/lib/db'
 import Size from '@/models/Size'
+import Photo from '@/models/Photo'
+import Price from '@/models/Price'
 import { adminAuth } from '@/lib/adminAuth'
 import { corsHeaders } from '@/lib/utils'
 import { NextResponse } from 'next/server'
@@ -61,6 +63,28 @@ export const DELETE = adminAuth(async (req, { params }) => {
     }
 
     await connectToDB()
+
+    // Check if size exists and has associated photos or prices
+    const photoCount = await Photo.countDocuments({ sizes: params.id })
+    const priceCount = await Price.countDocuments({ sizeId: params.id })
+
+    if (photoCount > 0 || priceCount > 0) {
+      const details = []
+      if (photoCount > 0) {
+        details.push(`${photoCount} photo(s)`)
+      }
+      if (priceCount > 0) {
+        details.push(`${priceCount} price(s)`)
+      }
+
+      return NextResponse.json(
+        {
+          error: 'Cannot delete size with associated references',
+          details: `This size has ${details.join(' and ')}. Please reassign or delete them first.`
+        },
+        { status: 409, headers: corsHeaders(req) }
+      )
+    }
 
     // Attempt to delete the size
     const deleted = await Size.findByIdAndDelete(params.id)

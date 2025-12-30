@@ -11,11 +11,16 @@
 import { GET, POST } from '@/app/api/sizes/route'
 import { PUT, DELETE } from '@/app/api/sizes/[id]/route'
 import Size from '@/models/Size'
+import Photo from '@/models/Photo'
+import Price from '@/models/Price'
+import Category from '@/models/Category'
 import {
   createMockRequest,
   createAuthenticatedRequest,
   getResponseBody,
   createTestSize,
+  createTestPhoto,
+  createTestCategory,
 } from '../utils/testHelpers'
 import { setupDatabase, clearAllCollections, teardownDatabase } from '../utils/dbHelpers'
 
@@ -190,6 +195,75 @@ describe('/api/sizes', () => {
 
       expect(response.status).toBe(401)
       expect(data.error).toContain('Unauthorized')
+    })
+
+    it('should prevent deletion of size with associated photos', async () => {
+      // Create size, category, and photo that references the size
+      const size = await Size.create({ name: '8x10', width: 8, height: 10, price: 25 })
+      const category = await Category.create(createTestCategory())
+      await Photo.create(createTestPhoto(category._id, { sizes: [size._id] }))
+
+      const request = createAuthenticatedRequest(`http://localhost:4010/api/sizes/${size._id}`, {
+        method: 'DELETE',
+      })
+
+      const response = await DELETE(request, { params: { id: size._id.toString() } })
+      const data = await getResponseBody(response)
+
+      expect(response.status).toBe(409)
+      expect(data.error).toBe('Cannot delete size with associated references')
+      expect(data.details).toContain('1 photo(s)')
+
+      // Verify size was not deleted
+      const sizeStillExists = await Size.findById(size._id)
+      expect(sizeStillExists).not.toBeNull()
+    })
+
+    it('should prevent deletion of size with associated prices', async () => {
+      // Create size and price that references it
+      const size = await Size.create({ name: '11x14', width: 11, height: 14, price: 35 })
+      await Price.create({ sizeId: size._id, price: 40, label: 'Sale' })
+
+      const request = createAuthenticatedRequest(`http://localhost:4010/api/sizes/${size._id}`, {
+        method: 'DELETE',
+      })
+
+      const response = await DELETE(request, { params: { id: size._id.toString() } })
+      const data = await getResponseBody(response)
+
+      expect(response.status).toBe(409)
+      expect(data.error).toBe('Cannot delete size with associated references')
+      expect(data.details).toContain('1 price(s)')
+
+      // Verify size was not deleted
+      const sizeStillExists = await Size.findById(size._id)
+      expect(sizeStillExists).not.toBeNull()
+    })
+
+    it('should prevent deletion of size with both photos and prices', async () => {
+      // Create size, category, photo, and price
+      const size = await Size.create({ name: '16x20', width: 16, height: 20, price: 50 })
+      const category = await Category.create(createTestCategory())
+      await Photo.create(createTestPhoto(category._id, { sizes: [size._id] }))
+      await Photo.create(createTestPhoto(category._id, { sizes: [size._id] }))
+      await Price.create({ sizeId: size._id, price: 55, label: 'Regular' })
+
+      const request = createAuthenticatedRequest(`http://localhost:4010/api/sizes/${size._id}`, {
+        method: 'DELETE',
+      })
+
+      const response = await DELETE(request, { params: { id: size._id.toString() } })
+      const data = await getResponseBody(response)
+
+      expect(response.status).toBe(409)
+      expect(data.error).toBe('Cannot delete size with associated references')
+      expect(data.details).toContain('2 photo(s)')
+      expect(data.details).toContain('1 price(s)')
+      expect(data.details).toContain('and')
+
+      // Verify size was not deleted
+      const sizeStillExists = await Size.findById(size._id)
+      expect(sizeStillExists).not.toBeNull()
     })
   })
 })
