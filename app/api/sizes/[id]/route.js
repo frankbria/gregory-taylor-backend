@@ -32,7 +32,7 @@ export const PUT = adminAuth(async (req, { params }) => {
     }
 
     // Attempt to update the size
-    const updated = await Size.findByIdAndUpdate(params.id, body, { new: true })
+    const updated = await Size.findByIdAndUpdate(params.id, body, { new: true, runValidators: true, context: 'query' })
 
     // Check if size was found
     if (!updated) {
@@ -46,7 +46,7 @@ export const PUT = adminAuth(async (req, { params }) => {
   } catch (error) {
     console.error('Error updating size:', error)
     return NextResponse.json(
-      { error: 'Failed to update size' },
+      { error: 'Failed to update size', details: error.message },
       { status: 500, headers: corsHeaders(req) }
     )
   }

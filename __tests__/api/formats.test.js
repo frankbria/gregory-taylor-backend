@@ -231,6 +231,46 @@ describe('/api/formats', () => {
       expect(response.status).toBe(401)
       expect(data.error).toContain('Unauthorized')
     })
+
+    it('should reject update with negative price (schema validation)', async () => {
+      const format = await Format.create({ name: 'Test Format', price: 50 })
+
+      const request = createAuthenticatedRequest(`http://localhost:4010/api/formats/${format._id}`, {
+        method: 'PUT',
+        body: { price: -10 },
+      })
+
+      const response = await PUT(request, { params: { id: format._id.toString() } })
+      const data = await getResponseBody(response)
+
+      expect(response.status).toBe(500)
+      expect(data.error).toBe('Failed to update format')
+      expect(data.details).toContain('Validation failed')
+
+      // Verify original price was not changed
+      const unchangedFormat = await Format.findById(format._id)
+      expect(unchangedFormat.price).toBe(50)
+    })
+
+    it('should reject update with empty name (schema validation)', async () => {
+      const format = await Format.create({ name: 'Test Format', price: 50 })
+
+      const request = createAuthenticatedRequest(`http://localhost:4010/api/formats/${format._id}`, {
+        method: 'PUT',
+        body: { name: '' },
+      })
+
+      const response = await PUT(request, { params: { id: format._id.toString() } })
+      const data = await getResponseBody(response)
+
+      expect(response.status).toBe(500)
+      expect(data.error).toBe('Failed to update format')
+      expect(data.details).toContain('Validation failed')
+
+      // Verify original name was not changed
+      const unchangedFormat = await Format.findById(format._id)
+      expect(unchangedFormat.name).toBe('Test Format')
+    })
   })
 
   describe('DELETE /api/formats/[id]', () => {

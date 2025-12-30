@@ -65,7 +65,7 @@ export const PUT = adminAuth(async (req, { params }) => {
     const updatedFormat = await Format.findByIdAndUpdate(
       params.id,
       { $set: body },
-      { new: true }
+      { new: true, runValidators: true, context: 'query' }
     )
 
     // Check if format was found
@@ -80,7 +80,7 @@ export const PUT = adminAuth(async (req, { params }) => {
   } catch (error) {
     console.error('Error updating format:', error)
     return NextResponse.json(
-      { error: 'Failed to update format' },
+      { error: 'Failed to update format', details: error.message },
       { status: 500, headers: corsHeaders(req) }
     )
   }

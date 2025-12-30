@@ -31,7 +31,7 @@ export const PUT = adminAuth(async (req, { params }) => {
     }
 
     // Attempt to update the category
-    const updated = await Category.findByIdAndUpdate(params.id, body, { new: true })
+    const updated = await Category.findByIdAndUpdate(params.id, body, { new: true, runValidators: true, context: 'query' })
 
     // Check if category was found
     if (!updated) {
@@ -45,7 +45,7 @@ export const PUT = adminAuth(async (req, { params }) => {
   } catch (error) {
     console.error('Error updating category:', error)
     return NextResponse.json(
-      { error: 'Failed to update category' },
+      { error: 'Failed to update category', details: error.message },
       { status: 500, headers: corsHeaders(req) }
     )
   }
