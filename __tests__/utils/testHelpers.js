@@ -105,7 +105,7 @@ export function createTestCategory(overrides = {}) {
 
 /**
  * Create a test photo object
- * @param {string} categoryId - Category ID to associate with
+ * @param {string|ObjectId} categoryId - Category ID to associate with (ObjectId or string)
  * @param {Object} overrides - Optional field overrides
  * @returns {Object} - Photo data
  */
@@ -114,13 +114,22 @@ export function createTestPhoto(categoryId, overrides = {}) {
   return {
     title: `Test Photo ${timestamp}`,
     slug: `test-photo-${timestamp}`,
-    category: categoryId,
+    category: categoryId, // Accept ObjectId or string
     imageUrl: `https://test.cloudinary.com/image-${timestamp}.jpg`,
     publicID: `test-public-id-${timestamp}`, // Note: capital D as per Photo model
     width: 1920,
     height: 1080,
     aspectRatio: 1.78,
     featured: false,
+    fullLength: false,
+    useDefaultSizes: true,
+    // Optional fields with sensible defaults
+    description: '',
+    keywords: [],
+    sizes: [],
+    location: '',
+    format: null,
+    imageFormat: null,
     ...overrides,
   }
 }
@@ -134,8 +143,10 @@ export function createTestSize(overrides = {}) {
   const timestamp = Date.now()
   return {
     name: `Test Size ${timestamp}`,
-    slug: `test-size-${timestamp}`,
-    dimensions: '8x10',
+    width: 8,
+    height: 10,
+    unit: 'in',
+    price: 25,
     ...overrides,
   }
 }
@@ -148,8 +159,8 @@ export function createTestSize(overrides = {}) {
 export function createTestFrame(overrides = {}) {
   const timestamp = Date.now()
   return {
-    name: `Test Frame ${timestamp}`,
-    slug: `test-frame-${timestamp}`,
+    style: `Test Frame ${timestamp}`,
+    price: 50,
     ...overrides,
   }
 }
@@ -163,7 +174,7 @@ export function createTestFormat(overrides = {}) {
   const timestamp = Date.now()
   return {
     name: `Test Format ${timestamp}`,
-    slug: `test-format-${timestamp}`,
+    price: 100,
     ...overrides,
   }
 }

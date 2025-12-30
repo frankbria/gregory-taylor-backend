@@ -1,3 +1,5 @@
+export const runtime = "nodejs";
+
 import { connectToDB } from '@/lib/db'
 import Category from '@/models/Category'
 import { adminAuth } from '@/lib/adminAuth'
