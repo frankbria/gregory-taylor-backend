@@ -89,6 +89,9 @@ export async function closeDatabase() {
   await mongoose.connection.close()
 }
 
+// Counter to ensure unique test data even within the same millisecond
+let uniqueCounter = 0
+
 /**
  * Create a test category object
  * @param {Object} overrides - Optional field overrides
@@ -96,9 +99,10 @@ export async function closeDatabase() {
  */
 export function createTestCategory(overrides = {}) {
   const timestamp = Date.now()
+  const unique = uniqueCounter++
   return {
-    name: `Test Category ${timestamp}`,
-    slug: `test-category-${timestamp}`,
+    name: `Test Category ${timestamp}-${unique}`,
+    slug: `test-category-${timestamp}-${unique}`,
     ...overrides,
   }
 }
@@ -111,12 +115,13 @@ export function createTestCategory(overrides = {}) {
  */
 export function createTestPhoto(categoryId, overrides = {}) {
   const timestamp = Date.now()
+  const unique = uniqueCounter++
   return {
-    title: `Test Photo ${timestamp}`,
-    slug: `test-photo-${timestamp}`,
+    title: `Test Photo ${timestamp}-${unique}`,
+    slug: `test-photo-${timestamp}-${unique}`,
     category: categoryId, // Accept ObjectId or string
-    imageUrl: `https://test.cloudinary.com/image-${timestamp}.jpg`,
-    publicID: `test-public-id-${timestamp}`, // Note: capital D as per Photo model
+    imageUrl: `https://test.cloudinary.com/image-${timestamp}-${unique}.jpg`,
+    publicID: `test-public-id-${timestamp}-${unique}`, // Note: capital D as per Photo model
     width: 1920,
     height: 1080,
     aspectRatio: 1.78,

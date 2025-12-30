@@ -47,10 +47,10 @@ describe('/api/categories', () => {
     })
 
     it('should return all categories sorted by name', async () => {
-      // Create test categories
-      await Category.create(createTestCategory({ name: 'Zebras', slug: 'zebras' }))
-      await Category.create(createTestCategory({ name: 'Apples', slug: 'apples' }))
-      await Category.create(createTestCategory({ name: 'Monkeys', slug: 'monkeys' }))
+      // Create test categories - use helper defaults which are unique
+      const cat1 = await Category.create({ ...createTestCategory(), name: `AAA-${Date.now()}-${Math.random()}`, slug: `aaa-${Date.now()}-${Math.random()}` })
+      const cat2 = await Category.create({ ...createTestCategory(), name: `BBB-${Date.now()}-${Math.random()}`, slug: `bbb-${Date.now()}-${Math.random()}` })
+      const cat3 = await Category.create({ ...createTestCategory(), name: `CCC-${Date.now()}-${Math.random()}`, slug: `ccc-${Date.now()}-${Math.random()}` })
 
       const request = createMockRequest('http://localhost:4010/api/categories')
       const response = await GET(request)
@@ -58,14 +58,15 @@ describe('/api/categories', () => {
 
       expect(response.status).toBe(200)
       expect(data.length).toBe(3)
-      expect(data[0].name).toBe('Apples')
-      expect(data[1].name).toBe('Monkeys')
-      expect(data[2].name).toBe('Zebras')
+      // Verify sorting by checking alphabetical order
+      expect(data[0].name.startsWith('AAA')).toBe(true)
+      expect(data[1].name.startsWith('BBB')).toBe(true)
+      expect(data[2].name.startsWith('CCC')).toBe(true)
     })
 
     it('should include featured image URL when a featured photo exists', async () => {
-      // Create category
-      const category = await Category.create(createTestCategory({ name: 'Wildlife', slug: 'wildlife' }))
+      // Create category with unique name using helper defaults
+      const category = await Category.create(createTestCategory())
 
       // Create a featured photo
       const featuredPhoto = await Photo.create(
@@ -86,7 +87,7 @@ describe('/api/categories', () => {
 
     it('should have null featuredImage when no featured photo exists', async () => {
       // Create category without featured photo
-      await Category.create(createTestCategory({ name: 'Landscapes', slug: 'landscapes' }))
+      await Category.create(createTestCategory())
 
       const request = createMockRequest('http://localhost:4010/api/categories')
       const response = await GET(request)
@@ -159,41 +160,46 @@ describe('/api/categories', () => {
     })
 
     it('should enforce unique name constraint', async () => {
-      // Create first category
-      const categoryData = createTestCategory({ name: 'Nature', slug: 'nature' })
+      // Create first category with unique name
+      const uniqueName = `Nature-${Date.now()}-${Math.random()}`
+      const categoryData = createTestCategory({ name: uniqueName, slug: `nature-${Date.now()}-${Math.random()}` })
       await Category.create(categoryData)
 
-      // Try to create duplicate
+      // Try to create duplicate with same name but different slug
       const request = createAuthenticatedRequest('http://localhost:4010/api/categories', {
         method: 'POST',
-        body: { name: 'Nature', slug: 'nature-2' },
+        body: { name: uniqueName, slug: `nature-2-${Date.now()}-${Math.random()}` },
       })
 
-      // This should fail at the database level
-      await expect(POST(request)).rejects.toThrow()
+      // This should fail at the database level due to unique constraint
+      const response = await POST(request)
+      expect(response.status).toBe(500)
     })
   })
 
   describe('PUT /api/categories/[id]', () => {
     it('should update a category when authenticated', async () => {
-      // Create a category
-      const category = await Category.create(createTestCategory({ name: 'Old Name', slug: 'old-name' }))
+      // Create a category with unique names using helper
+      const category = await Category.create(createTestCategory())
+
+      const newName = `Updated-${Date.now()}-${Math.random()}`
+      const newSlug = `updated-${Date.now()}-${Math.random()}`
 
       const request = createAuthenticatedRequest(`http://localhost:4010/api/categories/${category._id}`, {
         method: 'PUT',
-        body: { name: 'New Name', slug: 'new-name' },
+        body: { name: newName, slug: newSlug },
       })
 
       const response = await PUT(request, { params: { id: category._id.toString() } })
       const data = await getResponseBody(response)
 
       expect(response.status).toBe(200)
-      expect(data.name).toBe('New Name')
-      expect(data.slug).toBe('new-name')
+      expect(data.name).toBe(newName)
+      expect(data.slug).toBe(newSlug)
 
       // Verify it was actually updated in DB
       const updatedCategory = await Category.findById(category._id)
-      expect(updatedCategory.name).toBe('New Name')
+      expect(updatedCategory.name).toBe(newName)
     })
 
     it('should reject update without authentication', async () => {
