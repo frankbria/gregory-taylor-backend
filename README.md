@@ -1,5 +1,7 @@
 # Gregory Taylor Backend
 
+[![Follow on X](https://img.shields.io/twitter/follow/FrankBria18044?style=social)](https://x.com/FrankBria18044)
+
 A Next.js 15 application serving as the backend API and admin dashboard for a photography e-commerce site.
 
 ## Overview
