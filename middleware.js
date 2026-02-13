@@ -1,35 +1,30 @@
 // middleware.js
 import { NextResponse } from "next/server";
+import { corsHeaders } from "@/lib/utils";
 
 export function middleware(request) {
   const { pathname } = request.nextUrl;
 
-  // List of paths that should be publicly accessible (API)
-  const publicApiPaths = [
-    '/api/checkout',
-    '/api/photos',
-    '/api/categories',
-    '/api/sizes',
-    '/api/frames',
-    '/api/formats',
-    '/api/auth', // Better Auth endpoints
-  ];
+  // --- CORS: handle preflight and attach headers for all /api/* routes ---
+  if (pathname.startsWith('/api/')) {
+    // Preflight: return 204 with CORS headers immediately
+    if (request.method === 'OPTIONS') {
+      return new NextResponse(null, {
+        status: 204,
+        headers: corsHeaders(request),
+      });
+    }
 
-  // Check if the path starts with any of the public API paths
-  const isPublicApiPath = publicApiPaths.some(path =>
-    pathname.startsWith(path)
-  );
-
-  // Also allow paths that match specific patterns
-  const isPublicPattern = [
-    /^\/api\/photos\/by-name\/.*/,
-    /^\/api\/gallery\/.*/
-  ].some(pattern => pattern.test(pathname));
-
-  // If it's a public API path or matches a pattern, allow access
-  if (isPublicApiPath || isPublicPattern) {
-    return NextResponse.next();
+    // Non-preflight API requests: continue to route handler with CORS headers
+    const response = NextResponse.next();
+    const headers = corsHeaders(request);
+    for (const [key, value] of Object.entries(headers)) {
+      response.headers.set(key, value);
+    }
+    return response;
   }
+
+  // --- Non-API routes below ---
 
   // Auth pages should be accessible without session
   const authPaths = ['/sign-in', '/sign-up', '/forgot-password', '/reset-password'];
