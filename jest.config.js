@@ -3,6 +3,9 @@ module.exports = {
   // Use Node environment for API testing
   testEnvironment: 'node',
 
+  // Suites share one memory-server DB and clear it in beforeEach, so they can't run in parallel
+  maxWorkers: 1,
+
   // Setup files
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
 

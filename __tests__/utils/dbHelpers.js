@@ -13,6 +13,8 @@ import { connectToDB } from '@/lib/db'
  */
 export async function setupDatabase() {
   await connectToDB()
+  // Indexes build in the background; wait so unique-constraint tests don't race them
+  await Promise.all(Object.values(mongoose.models).map((model) => model.init()))
 }
 
 /**
