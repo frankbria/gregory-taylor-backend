@@ -220,6 +220,7 @@ CORS_ALLOWED_ORIGINS=https://yourdomain.com,http://localhost:3000
 
 GitHub Actions runs lint, tests and build on every push and PR to `main`. It does not deploy:
 the production host is only reachable over Tailscale, so deploys run from a tailnet machine.
+See [docs/DEPLOYMENT_USERS.md](docs/DEPLOYMENT_USERS.md) for the service user, systemd unit and deploy steps.
 
 ### Manual Deployment
 
