@@ -1,6 +1,9 @@
 const { MongoMemoryServer } = require('mongodb-memory-server')
 
 module.exports = async function globalSetup() {
+  // mongod's data dir lives in os.tmpdir(); on disk (esp. WSL) fsync latency times out hooks
+  if (require('fs').existsSync('/dev/shm')) process.env.TMPDIR = '/dev/shm'
+
   // Create an in-memory MongoDB instance
   const instance = await MongoMemoryServer.create({
     binary: {
