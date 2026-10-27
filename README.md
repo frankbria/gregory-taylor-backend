@@ -87,7 +87,7 @@ Copy `.env.example` to `.env` and configure:
 |----------|-------------|
 | `MONGODB_URI` | MongoDB connection string |
 | `BETTER_AUTH_SECRET` | Secret for session encryption (generate: `openssl rand -base64 32`) |
-| `NEXT_PUBLIC_ADMIN_API_KEY` | Token for API authentication (generate: `openssl rand -hex 32`) |
+| `ADMIN_API_KEY` | Optional server-only token for server-to-server admin API calls (generate: `openssl rand -hex 32`) |
 | `STRIPE_SECRET_KEY` | Stripe secret key |
 | `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key |
@@ -114,7 +114,7 @@ Copy `.env.example` to `.env` and configure:
 
 ### Protected Endpoints
 
-POST, PUT, and DELETE operations require the `Authorization: Bearer <NEXT_PUBLIC_ADMIN_API_KEY>` header.
+POST, PUT, and DELETE operations require a signed-in admin session, or the `Authorization: Bearer <ADMIN_API_KEY>` header for server-to-server calls.
 
 ### Stripe Webhooks
 
