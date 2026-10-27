@@ -193,7 +193,7 @@ Access the admin dashboard at `/admin` after signing in. Features include:
 
 ### Admin User Registration
 
-Registration is controlled via invite code. If `INVITE_CODE` is set, users must access:
+Registration is closed unless `INVITE_CODE` is set. While it is set, users must access:
 
 ```
 https://yourdomain.com/sign-up?code=YOUR_INVITE_CODE

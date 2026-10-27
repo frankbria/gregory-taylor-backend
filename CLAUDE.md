@@ -82,8 +82,7 @@ Required:
 - `CORS_ALLOWED_ORIGINS` - Comma-separated allowed origins for CORS (must include admin panel's own domain for Better Auth)
 
 Optional:
-- `INVITE_CODE` - If set, requires `/sign-up?code=XXX` for registration
-- `NEXT_PUBLIC_INVITE_CODE` - Client-side version (must match `INVITE_CODE`)
+- `INVITE_CODE` - Registration is closed unless set; then requires `/sign-up?code=XXX`
 - `PORT` - Server port (default 4000, use non-default on shared servers)
 
 ## Patterns to Follow
