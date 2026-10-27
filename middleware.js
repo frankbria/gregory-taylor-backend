@@ -1,5 +1,6 @@
 // middleware.js
 import { NextResponse } from "next/server";
+import { getSessionCookie } from "better-auth/cookies";
 import { corsHeaders } from "@/lib/utils";
 
 export function middleware(request) {
@@ -34,10 +35,9 @@ export function middleware(request) {
   }
 
   // Protect admin routes - check for Better Auth session cookie
-  // Better Auth uses 'better-auth.session_token' cookie by default
+  // (over HTTPS it is named '__Secure-better-auth.session_token'; getSessionCookie handles both)
   if (pathname.startsWith('/admin')) {
-    const sessionCookie = request.cookies.get('better-auth.session_token');
-    if (!sessionCookie?.value) {
+    if (!getSessionCookie(request)) {
       return NextResponse.redirect(new URL('/sign-in', request.url));
     }
   }
