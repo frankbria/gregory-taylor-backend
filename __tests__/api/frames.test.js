@@ -199,7 +199,7 @@ describe('/api/frames', () => {
     it('should delete a frame', async () => {
       const frame = await Frame.create({ style: 'Maple', price: 105 })
 
-      const request = createMockRequest(`http://localhost:4010/api/frames/${frame._id}`, {
+      const request = createAuthenticatedRequest(`http://localhost:4010/api/frames/${frame._id}`, {
         method: 'DELETE',
       })
       const response = await DELETE(request, { params: { id: frame._id.toString() } })
@@ -213,12 +213,24 @@ describe('/api/frames', () => {
 
     it('should return 404 when deleting non-existent frame', async () => {
       const fakeId = '507f1f77bcf86cd799439011'
-      const request = createMockRequest(`http://localhost:4010/api/frames/${fakeId}`, {
+      const request = createAuthenticatedRequest(`http://localhost:4010/api/frames/${fakeId}`, {
         method: 'DELETE',
       })
       const response = await DELETE(request, { params: { id: fakeId } })
 
       expect(response.status).toBe(404)
+    })
+
+    it('should reject delete without authentication', async () => {
+      const frame = await Frame.create({ style: 'Walnut', price: 110 })
+
+      const request = createMockRequest(`http://localhost:4010/api/frames/${frame._id}`, {
+        method: 'DELETE',
+      })
+      const response = await DELETE(request, { params: { id: frame._id.toString() } })
+
+      expect(response.status).toBe(401)
+      expect(await Frame.findById(frame._id)).not.toBeNull()
     })
   })
 })
