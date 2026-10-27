@@ -218,29 +218,8 @@ CORS_ALLOWED_ORIGINS=https://yourdomain.com,http://localhost:3000
 
 ### CI/CD Pipeline
 
-This project uses GitHub Actions for automated deployment:
-
-- **Trigger**: Push to `main` branch or manual workflow dispatch
-- **Process**: Build on GitHub runner → rsync to server → PM2 restart
-- **Environment**: Uses GitHub Environments (`production`) for secrets
-
-#### Required GitHub Secrets (production environment)
-
-| Secret | Description |
-|--------|-------------|
-| `SERVER_HOST` | Server IP/hostname |
-| `SERVER_USER` | SSH username |
-| `SSH_PRIVATE_KEY` | Private key for SSH access |
-| All env vars | Same as `.env.example` |
-
-#### Required GitHub Variables
-
-| Variable | Example | Description |
-|----------|---------|-------------|
-| `DEPLOY_PATH` | `/var/www/gregory-taylor-backend` | Server deployment directory |
-| `APP_PORT` | `4001` | Port for the app (avoid defaults on shared servers) |
-| `PM2_APP_NAME` | `gregory-taylor-backend` | PM2 process name |
-| `SERVER_SSH_PORT` | `22` | SSH port (optional) |
+GitHub Actions runs lint, tests and build on every push and PR to `main`. It does not deploy:
+the production host is only reachable over Tailscale, so deploys run from a tailnet machine.
 
 ### Manual Deployment
 
@@ -251,7 +230,7 @@ npm run start
 
 ### Server Requirements
 
-- Node.js 20+
+- Node.js 24 (see `.nvmrc`)
 - PM2 (`npm install -g pm2`)
 - Nginx (for reverse proxy/SSL)
 

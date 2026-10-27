@@ -118,9 +118,7 @@ Use `generateSlug()` and `ensureUniqueSlug()` from `lib/utils.js` when creating 
 
 ### CI/CD
 - GitHub Actions workflow in `.github/workflows/deploy.yml`
-- Builds on GitHub runner, rsyncs to server, restarts PM2
-- Triggers on push to `main` or manual dispatch
-- Uses GitHub Environments (`production`) for secrets/variables
+- CI only (lint, test, build); prod is Tailscale-only, so deploys run from a tailnet machine
 
 ### PM2 Configuration
 - `ecosystem.config.cjs` - PM2 process configuration
