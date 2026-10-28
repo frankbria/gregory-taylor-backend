@@ -38,7 +38,7 @@ export function middleware(request) {
   // (over HTTPS it is named '__Secure-better-auth.session_token'; getSessionCookie handles both)
   if (pathname.startsWith('/admin')) {
     if (!getSessionCookie(request)) {
-      return NextResponse.redirect(new URL('/sign-in', request.url));
+      return NextResponse.redirect(new URL('/sign-in', process.env.BETTER_AUTH_URL || request.url));
     }
   }
 
