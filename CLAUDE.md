@@ -31,7 +31,7 @@ npm run lint     # Run ESLint
 
 ### API Routes (app/api/)
 - **Public endpoints**: `/api/photos`, `/api/categories`, `/api/sizes`, `/api/frames`, `/api/formats`, `/api/checkout`, `/api/gallery/[slug]`, `/api/photos/by-name/[slug]`
-- **Protected endpoints**: POST/PUT/DELETE operations require `Authorization: Bearer <NEXT_PUBLIC_ADMIN_API_KEY>` header
+- **Protected endpoints**: POST/PUT/DELETE operations require a Better Auth session cookie, or `Authorization: Bearer <ADMIN_API_KEY>` (server-only) header
 - All routes use `export const runtime = "nodejs"` for MongoDB compatibility
 
 ### Authentication
@@ -49,8 +49,8 @@ export async function GET(request) { /* no auth */ }
 export const POST = adminAuth(async (request) => { /* protected */ })
 ```
 
-- `lib/adminAuth.js` - Token-based auth middleware wrapping API handlers
-- `lib/apiClient.js` - Axios client auto-injecting admin API key for requests
+- `lib/adminAuth.js` - Auth middleware wrapping API handlers (session cookie or server-only bearer key)
+- `lib/apiClient.js` - Same-origin Axios client; the session cookie authenticates admin requests
 
 ### Database
 - MongoDB via Mongoose (`lib/db.js`)
@@ -76,14 +76,13 @@ export const POST = adminAuth(async (request) => { /* protected */ })
 Required:
 - `MONGODB_URI` - MongoDB connection string
 - `BETTER_AUTH_SECRET` - Secret key for Better Auth session encryption
-- `NEXT_PUBLIC_ADMIN_API_KEY` - Token for API authentication (NEXT_PUBLIC_ prefix for client access)
+- `ADMIN_API_KEY` - Optional server-only bearer token for server-to-server admin API calls
 - `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` - Stripe
 - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` - Image uploads
 - `CORS_ALLOWED_ORIGINS` - Comma-separated allowed origins for CORS (must include admin panel's own domain for Better Auth)
 
 Optional:
-- `INVITE_CODE` - If set, requires `/sign-up?code=XXX` for registration
-- `NEXT_PUBLIC_INVITE_CODE` - Client-side version (must match `INVITE_CODE`)
+- `INVITE_CODE` - Registration is closed unless set; then requires `/sign-up?code=XXX`
 - `PORT` - Server port (default 4000, use non-default on shared servers)
 
 ## Patterns to Follow
@@ -119,9 +118,7 @@ Use `generateSlug()` and `ensureUniqueSlug()` from `lib/utils.js` when creating 
 
 ### CI/CD
 - GitHub Actions workflow in `.github/workflows/deploy.yml`
-- Builds on GitHub runner, rsyncs to server, restarts PM2
-- Triggers on push to `main` or manual dispatch
-- Uses GitHub Environments (`production`) for secrets/variables
+- CI only (lint, test, build); prod is Tailscale-only, so deploys run from a tailnet machine
 
 ### PM2 Configuration
 - `ecosystem.config.cjs` - PM2 process configuration

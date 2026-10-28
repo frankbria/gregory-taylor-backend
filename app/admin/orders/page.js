@@ -13,7 +13,6 @@ export default function ManageOrdersPage() {
   useEffect(() => {
     async function fetchOrders() {
       try {
-        console.log('Admin API Key available:', !!process.env.NEXT_PUBLIC_ADMIN_API_KEY)
         const res = await apiClient.get('/api/orders')
         setOrders(res.data)
       } catch (err) {

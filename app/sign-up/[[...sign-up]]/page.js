@@ -19,8 +19,8 @@ export default function SignUpPage() {
 
   // Check invite code from URL
   const inviteCode = searchParams.get("code");
-  const expectedCode = process.env.NEXT_PUBLIC_INVITE_CODE;
-  const isInviteValid = !expectedCode || inviteCode === expectedCode;
+  // The server validates the code; the client only checks one was supplied
+  const isInviteValid = Boolean(inviteCode);
 
   // Redirect if already signed in
   useEffect(() => {

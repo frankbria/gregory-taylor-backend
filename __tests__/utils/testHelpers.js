@@ -50,7 +50,7 @@ export function createAuthenticatedRequest(url, options = {}) {
     ...restOptions,
     headers: {
       ...headers,
-      'Authorization': `Bearer ${process.env.NEXT_PUBLIC_ADMIN_API_KEY}`,
+      'Authorization': `Bearer ${process.env.ADMIN_API_KEY}`,
     },
   })
 }

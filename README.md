@@ -87,7 +87,7 @@ Copy `.env.example` to `.env` and configure:
 |----------|-------------|
 | `MONGODB_URI` | MongoDB connection string |
 | `BETTER_AUTH_SECRET` | Secret for session encryption (generate: `openssl rand -base64 32`) |
-| `NEXT_PUBLIC_ADMIN_API_KEY` | Token for API authentication (generate: `openssl rand -hex 32`) |
+| `ADMIN_API_KEY` | Optional server-only token for server-to-server admin API calls (generate: `openssl rand -hex 32`) |
 | `STRIPE_SECRET_KEY` | Stripe secret key |
 | `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key |
@@ -114,7 +114,7 @@ Copy `.env.example` to `.env` and configure:
 
 ### Protected Endpoints
 
-POST, PUT, and DELETE operations require the `Authorization: Bearer <NEXT_PUBLIC_ADMIN_API_KEY>` header.
+POST, PUT, and DELETE operations require a signed-in admin session, or the `Authorization: Bearer <ADMIN_API_KEY>` header for server-to-server calls.
 
 ### Stripe Webhooks
 
@@ -193,7 +193,7 @@ Access the admin dashboard at `/admin` after signing in. Features include:
 
 ### Admin User Registration
 
-Registration is controlled via invite code. If `INVITE_CODE` is set, users must access:
+Registration is closed unless `INVITE_CODE` is set. While it is set, users must access:
 
 ```
 https://yourdomain.com/sign-up?code=YOUR_INVITE_CODE
@@ -218,29 +218,8 @@ CORS_ALLOWED_ORIGINS=https://yourdomain.com,http://localhost:3000
 
 ### CI/CD Pipeline
 
-This project uses GitHub Actions for automated deployment:
-
-- **Trigger**: Push to `main` branch or manual workflow dispatch
-- **Process**: Build on GitHub runner → rsync to server → PM2 restart
-- **Environment**: Uses GitHub Environments (`production`) for secrets
-
-#### Required GitHub Secrets (production environment)
-
-| Secret | Description |
-|--------|-------------|
-| `SERVER_HOST` | Server IP/hostname |
-| `SERVER_USER` | SSH username |
-| `SSH_PRIVATE_KEY` | Private key for SSH access |
-| All env vars | Same as `.env.example` |
-
-#### Required GitHub Variables
-
-| Variable | Example | Description |
-|----------|---------|-------------|
-| `DEPLOY_PATH` | `/var/www/gregory-taylor-backend` | Server deployment directory |
-| `APP_PORT` | `4001` | Port for the app (avoid defaults on shared servers) |
-| `PM2_APP_NAME` | `gregory-taylor-backend` | PM2 process name |
-| `SERVER_SSH_PORT` | `22` | SSH port (optional) |
+GitHub Actions runs lint, tests and build on every push and PR to `main`. It does not deploy:
+the production host is only reachable over Tailscale, so deploys run from a tailnet machine.
 
 ### Manual Deployment
 
@@ -251,7 +230,7 @@ npm run start
 
 ### Server Requirements
 
-- Node.js 20+
+- Node.js 24 (see `.nvmrc`)
 - PM2 (`npm install -g pm2`)
 - Nginx (for reverse proxy/SSL)
 

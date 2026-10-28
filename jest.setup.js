@@ -11,7 +11,7 @@ if (!/^mongodb:\/\/(127\.0\.0\.1|localhost)[:/]/.test(process.env.MONGODB_URI)) 
   throw new Error(`Refusing to run tests against non-local MONGODB_URI`)
 }
 process.env.BETTER_AUTH_SECRET = 'test-secret-key-for-testing-only'
-process.env.NEXT_PUBLIC_ADMIN_API_KEY = 'test-admin-api-key'
+process.env.ADMIN_API_KEY = 'test-admin-api-key'
 process.env.STRIPE_SECRET_KEY = 'sk_test_dummy'
 process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test_dummy'
 process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY = 'pk_test_dummy'

@@ -3,6 +3,7 @@ export const runtime = "nodejs";
 
 import { connectToDB } from '@/lib/db'
 import Frame from '@/models/Frame'
+import { adminAuth } from '@/lib/adminAuth'
 
 export const dynamic = 'force-dynamic'
 
@@ -24,7 +25,7 @@ export async function GET(req, ctx) {
 }
 
 // DELETE a frame
-export async function DELETE(req, ctx) {
+export const DELETE = adminAuth(async (req, ctx) => {
   try {
     await connectToDB()
     const { params } = ctx
@@ -38,4 +39,4 @@ export async function DELETE(req, ctx) {
   } catch (error) {
     return new Response('Error deleting frame: ' + error.message, { status: 500 })
   }
-} 
+})
