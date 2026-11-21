@@ -18,7 +18,7 @@
     "cloudinary": "^2.6.0",
     "cors": "^2.8.5",
     "mongoose": "^8.13.1",
-    "next": "^15.5.28",
+    "next": "^15.5.29",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
     "react-hot-toast": "^2.5.2",
